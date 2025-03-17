@@ -9,13 +9,13 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import model.Album;
+import model.DataManager;
 import model.User;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.io.File;
 import java.io.IOException;
-import model.DataManager;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Controls the user view of the photo album application.
@@ -68,8 +68,7 @@ public class UserController {
     }
 
     /**
-     * Allows the user to create a new album.
-     * The album name is entered in the text field and then added to the list view.
+     * Handles the create album button.
      */
     @FXML
     private void handleCreateAlbum() {
@@ -90,8 +89,7 @@ public class UserController {
     }
 
     /**
-     * Allows the user to delete an album.
-     * The selected album in the list view is removed from the list view.
+     * Handles the delete album button.
      */
     @FXML
     private void handleDeleteAlbum() {
@@ -109,8 +107,7 @@ public class UserController {
     }
 
     /**
-     * Allows the user to rename an album.
-     * The selected album in the list view is renamed with the new name entered in the text field.
+     * Handles the rename album button.
      */
     @FXML
     private void handleRenameAlbum() {
@@ -139,8 +136,7 @@ public class UserController {
     }
 
     /**
-     * Allows the user to open an album.
-     * The selected album in the list view is opened in the album view.
+     * Handles the open album button.
      */
     @FXML
     private void handleOpenAlbum() {
@@ -149,15 +145,20 @@ public class UserController {
             showAlert("Error", "Please select an album to open.");
             return;
         }
+        Album album = findAlbumByName(selectedAlbum);
+        if (album == null) {
+            showAlert("Error", "Album not found.");
+            return;
+        }
         // Load the album view
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/AlbumView.fxml"));
             Parent root = loader.load();
 
-            // Get the AlbumController and pass the stage and album name to it
+            // Get the AlbumController and pass the stage, user, and album to it
             AlbumController controller = loader.getController();
             controller.setStage(stage);
-            controller.setAlbumName(selectedAlbum);
+            controller.setAlbum(album);
 
             // Set up the scene and stage
             Scene scene = new Scene(root, 600, 400);
@@ -171,8 +172,7 @@ public class UserController {
     }
 
     /**
-     * Allows the user to logout.
-     * The user data is saved before logging out.
+     * Handles the logout button.
      */
     @FXML
     private void handleLogout() {
@@ -213,7 +213,7 @@ public class UserController {
     }
 
     /**
-     * Shows an alert with the specified title and message.
+     * Shows an alert dialog with the given title and message.
      *
      * @param title   the title of the alert
      * @param message the message of the alert
@@ -230,7 +230,7 @@ public class UserController {
      * Finds an album by name.
      *
      * @param albumName the name of the album to find
-     * @return the album with the specified name, or null if not found
+     * @return the album if found, null otherwise
      */
     private Album findAlbumByName(String albumName) {
         for (Album album : user.getAlbums()) {

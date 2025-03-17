@@ -16,6 +16,7 @@ public class Album implements Serializable {
 
     private String name;
     private List<Photo> photos;
+    private User user;
 
     /**
      * Creates a new album with the given name.
@@ -28,7 +29,7 @@ public class Album implements Serializable {
     }
 
     /**
-     * Returns the name of the album
+     * Returns the name of the album.
      * 
      * @return the name of the album
      */
@@ -37,7 +38,7 @@ public class Album implements Serializable {
     }
 
     /**
-     * Sets the name of the album. Allows user to change name
+     * Sets the name of the album.
      * 
      * @param name the new name of the album
      */
@@ -46,16 +47,16 @@ public class Album implements Serializable {
     }
 
     /**
-     * Returns the list of photos of the album.
+     * Returns the list of photos in the album.
      * 
-     * @return the list of photos of the album
+     * @return the list of photos
      */
     public List<Photo> getPhotos() {
         return photos;
     }
 
     /**
-     * Adds a photo to the list of photos of the album.
+     * Adds a photo to the album.
      * 
      * @param photo the photo to add
      */
@@ -64,7 +65,7 @@ public class Album implements Serializable {
     }
 
     /**
-     * Removes a photo from the list of photos of the album.
+     * Removes a photo from the album.
      * 
      * @param photo the photo to remove
      */
@@ -72,5 +73,21 @@ public class Album implements Serializable {
         photos.remove(photo);
     }
 
+    /**
+     * Returns the user associated with the album.
+     * 
+     * @return the user
+     */
+    public User getUser() {
+        return user;
+    }
 
+    /**
+     * Sets the user associated with the album.
+     * 
+     * @param user the user to set
+     */
+    public void setUser(User user) {
+        this.user = user;
+    }
 }

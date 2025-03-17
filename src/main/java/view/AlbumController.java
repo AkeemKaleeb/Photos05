@@ -8,9 +8,11 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import model.Album;
+import model.Photo;
+import model.User;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
 
 /**
  * Controls the album view of the photo album application.
@@ -28,8 +30,8 @@ public class AlbumController {
     private ListView<String> photoListView;
 
     private Stage stage;
-    private String albumName;
-    private List<String> photos = new ArrayList<>();
+    private Album album;
+    private User user;
 
     /**
      * Sets the stage for this controller.
@@ -41,17 +43,28 @@ public class AlbumController {
     }
 
     /**
-     * Sets the album name for this controller.
+     * Sets the album for this controller.
      *
-     * @param albumName the album name to set
+     * @param album the album to set
      */
-    public void setAlbumName(String albumName) {
-        this.albumName = albumName;
+    public void setAlbum(Album album) {
+        this.album = album;
+        this.user = album.getUser(); // Assuming Album has a reference to User
+        loadAlbumPhotos();
     }
 
     /**
-     * Allows the user to add a photo to the album.
-     * The photo path is entered in the text field and then added to the list view.
+     * Loads the album's photos into the ListView.
+     */
+    private void loadAlbumPhotos() {
+        photoListView.getItems().clear();
+        for (Photo photo : album.getPhotos()) {
+            photoListView.getItems().add(photo.getFilePath());
+        }
+    }
+
+    /**
+     * Handles the "Add Photo" button action.
      */
     @FXML
     private void handleAddPhoto() {
@@ -60,18 +73,19 @@ public class AlbumController {
             showAlert("Error", "Please enter a photo path.");
             return;
         }
-        if (photos.contains(photoPath)) {
-            showAlert("Error", "Photo already exists in the album.");
-            return;
+        try {
+            Photo photo = new Photo(photoPath);
+            album.addPhoto(photo);
+            photoListView.getItems().add(photoPath);
+            photoPathField.clear();
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Error", "Failed to add photo.");
         }
-        photos.add(photoPath);
-        photoListView.getItems().add(photoPath);
-        photoPathField.clear();
     }
 
     /**
-     * Allows the user to remove a photo from the album.
-     * The selected photo in the list view is removed from the list view.
+     * Handles the "Remove Photo" button action.
      */
     @FXML
     private void handleRemovePhoto() {
@@ -80,61 +94,56 @@ public class AlbumController {
             showAlert("Error", "Please select a photo to remove.");
             return;
         }
-        photos.remove(selectedPhoto);
-        photoListView.getItems().remove(selectedPhoto);
+        Photo photo = findPhotoByPath(selectedPhoto);
+        if (photo != null) {
+            album.removePhoto(photo);
+            photoListView.getItems().remove(selectedPhoto);
+        }
     }
 
     /**
-     * Allows the user to add a caption to a photo.
-     * The selected photo in the list view is captioned.
+     * Handles the "Caption Photo" button action.
      */
     @FXML
     private void handleCaptionPhoto() {
         // Implement caption photo functionality
-        showAlert("Caption Photo", "This feature is not yet implemented.");
     }
 
     /**
-     * Allows the user to tag a photo.
-     * The selected photo in the list view is tagged.
+     * Handles the "Tag Photo" button action.
      */
     @FXML
     private void handleTagPhoto() {
         // Implement tag photo functionality
-        showAlert("Tag Photo", "This feature is not yet implemented.");
     }
 
     /**
-     * Allows the user to delete a tag from a photo.
-     * The selected photo in the list view has a tag deleted.
+     * Handles the "Delete Tag" button action.
      */
     @FXML
     private void handleDeleteTag() {
         // Implement delete tag functionality
-        showAlert("Delete Tag", "This feature is not yet implemented.");
     }
 
     /**
-     * Allows the user to move a photo to another album.
-     * The selected photo in the list view is moved to another album.
-    */
+     * Handles the "Move Photo" button action.
+     */
     @FXML
     private void handleMovePhoto() {
         // Implement move photo functionality
-        showAlert("Move Photo", "This feature is not yet implemented.");
     }
 
     /**
-     * Allows the user to search for photos.
+     * Handles the "Search Photos" button action.
      */
     @FXML
     private void handleSearchPhotos() {
         // Implement search photos functionality
-        showAlert("Search Photos", "This feature is not yet implemented.");
     }
 
     /**
-     * Allows the user to go back to album view
+     * Handles the "Back to Albums" button action.
+     * Loads the user view.
      */
     @FXML
     private void handleBackToAlbums() {
@@ -143,9 +152,10 @@ public class AlbumController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/UserView.fxml"));
             Parent root = loader.load();
 
-            // Get the UserController and pass the stage to it
+            // Get the UserController and pass the stage and user to it
             UserController controller = loader.getController();
             controller.setStage(stage);
+            controller.setUser(user);
 
             // Set up the scene and stage
             Scene scene = new Scene(root, 600, 400);
@@ -159,9 +169,9 @@ public class AlbumController {
     }
 
     /**
-     * Shows an alert with the specified title and message.
+     * Shows an alert dialog with the specified title and message.
      *
-     * @param title the title of the alert
+     * @param title   the title of the alert
      * @param message the message of the alert
      */
     private void showAlert(String title, String message) {
@@ -170,5 +180,20 @@ public class AlbumController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    /**
+     * Finds a photo in the album by its file path.
+     *
+     * @param photoPath the file path of the photo to find
+     * @return the photo with the specified file path, or null if not found
+     */
+    private Photo findPhotoByPath(String photoPath) {
+        for (Photo photo : album.getPhotos()) {
+            if (photo.getFilePath().equals(photoPath)) {
+                return photo;
+            }
+        }
+        return null;
     }
 }

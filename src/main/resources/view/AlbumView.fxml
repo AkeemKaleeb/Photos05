@@ -7,7 +7,10 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.171" fx:controller="view.AlbumController" spacing="10" padding="10">
+<VBox xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.171" fx:controller="view.AlbumController" spacing="10">
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
     <HBox spacing="10">
         <TextField fx:id="photoPathField" promptText="Photo Path"/>
         <Button text="Add Photo" onAction="#handleAddPhoto"/>
@@ -20,12 +23,8 @@
         <Button text="Delete Tag" onAction="#handleDeleteTag"/>
     </HBox>
     <HBox spacing="10">
-        <Button text="Copy Photo" onAction="#handleCopyPhoto"/>
         <Button text="Move Photo" onAction="#handleMovePhoto"/>
-    </HBox>
-    <HBox spacing="10">
         <Button text="Search Photos" onAction="#handleSearchPhotos"/>
-        <Button text="Slideshow" onAction="#handleSlideshow"/>
     </HBox>
     <Button text="Back to Albums" onAction="#handleBackToAlbums"/>
 </VBox>
