@@ -8,27 +8,31 @@ import java.util.List;
  * Represents a user in the photo album application.
  * Each user has a username, a list of albums, and methods to manage those albums.
  * 
- * @author Kaileb Cole
- * @author Maxime Deperrois
+ * @owner Kaileb Cole
+ * @owner Maxime Deperrois
  */
-public class User implements Serializable{
+/**
+ * Represents a user with a username and a list of albums.
+ */
+public class User implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private String username;
     private List<Album> albums;
 
     /**
-     * Creates a new user with the given username.
-     * 
+     * Constructs a new User with the specified username.
+     *
      * @param username the username of the user
      */
     public User(String username) {
         this.username = username;
         this.albums = new ArrayList<>();
-        this.albums = new ArrayList<>();
     }
 
     /**
      * Returns the username of the user.
-     * 
+     *
      * @return the username of the user
      */
     public String getUsername() {
@@ -36,8 +40,8 @@ public class User implements Serializable{
     }
 
     /**
-     * Sets the username of the user. Allows user to change name
-     * 
+     * Sets the username of the user.
+     *
      * @param username the new username of the user
      */
     public void setUsername(String username) {
@@ -46,7 +50,7 @@ public class User implements Serializable{
 
     /**
      * Returns the list of albums of the user.
-     * 
+     *
      * @return the list of albums of the user
      */
     public List<Album> getAlbums() {
@@ -54,18 +58,19 @@ public class User implements Serializable{
     }
 
     /**
-     * Adds an album to the list of albums of the user.
-     * 
-     * @param album the album to add
+     * Adds an album to the user's list of albums.
+     *
+     * @param album the album to be added
      */
     public void addAlbum(Album album) {
+        album.setUser(this);
         albums.add(album);
     }
 
     /**
-     * Removes an album from the list of albums of the user.
-     * 
-     * @param album the album to remove
+     * Removes an album from the user's list of albums.
+     *
+     * @param album the album to be removed
      */
     public void removeAlbum(Album album) {
         albums.remove(album);

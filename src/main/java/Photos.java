@@ -3,6 +3,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+
 import view.LoginController;
 
 /**
@@ -13,8 +14,14 @@ import view.LoginController;
  * @owner Maxime Deperrois
  */
 public class Photos extends Application {
+    /**
+     * Starts the JavaFX application and launches the primary stage
+     * 
+     * @param primaryStage the primary stage for the application
+     */
     @Override
     public void start(Stage primaryStage) throws Exception {
+        System.out.println("FXML Path: " + getClass().getResource("/view/LoginView.fxml"));
         // Load the FXML File
         FXMLLoader loader= new FXMLLoader(getClass().getResource("/view/LoginView.fxml"));
         Parent root = loader.load();
@@ -30,6 +37,12 @@ public class Photos extends Application {
         primaryStage.show();
     }
 
+    /**
+     * Launched by running the program
+     * Responsible for initiating the JavaFX Application
+     * 
+     * @param args the command line arguments
+     */
     public static void main(String[] args) {
         launch(args);
     }
