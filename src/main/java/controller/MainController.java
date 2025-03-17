@@ -1,4 +1,4 @@
-package main.java.controller;
+package controller;
 
 /**
  * Controls the main flow of the application

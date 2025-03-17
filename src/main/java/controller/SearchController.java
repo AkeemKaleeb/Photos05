@@ -1,4 +1,4 @@
-package main.java.controller;
+package controller;
 
 /**
  * Controls the search view of the photo album application.

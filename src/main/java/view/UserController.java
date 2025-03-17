@@ -1,4 +1,4 @@
-package main.java.view;
+package view;
 
 /**
  * Controls the user view of the photo album application.
