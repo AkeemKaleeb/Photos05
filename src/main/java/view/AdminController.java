@@ -7,7 +7,11 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import model.DataManager;
+import model.User;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,7 +25,21 @@ import java.util.Map;
 public class AdminController {
 
     private Stage stage;
-    private static Map<String, String> users = new HashMap<>();
+    private static final String USER_DATA_DIR = System.getProperty("user.home") + File.separator + "PhotoAlbumUsers";
+    private static Map<String, User> users = new HashMap<>();
+
+    /**
+     * Initializes the controller and loads all existing users.
+     */
+    @FXML
+    public void initialize() {
+        try {
+            users = DataManager.loadAllUsers(USER_DATA_DIR);
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+            showAlert("Error", "Failed to load user data.");
+        }
+    }
 
     /**
      * Sets the stage for this controller.
@@ -46,7 +64,9 @@ public class AdminController {
             showAlert("Error", "Username already exists.");
             return;
         }
-        users.put(username, username); // For simplicity, using username as password
+        User user = new User(username);
+        users.put(username, user);
+        saveUserData(user);
         showAlert("Success", "User created successfully.");
     }
 
@@ -65,6 +85,7 @@ public class AdminController {
             return;
         }
         users.remove(username);
+        deleteUserData(username);
         showAlert("Success", "User deleted successfully.");
     }
 
@@ -152,11 +173,42 @@ public class AdminController {
     }
 
     /**
+     * Saves the user data to disk.
+     *
+     * @param user the user to save
+     */
+    private void saveUserData(User user) {
+        try {
+            File userDir = new File(USER_DATA_DIR);
+            if (!userDir.exists()) {
+                userDir.mkdirs();
+            }
+            String filePath = USER_DATA_DIR + File.separator + user.getUsername() + ".dat";
+            DataManager.saveUser(user, filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Error", "Failed to save user data.");
+        }
+    }
+
+    /**
+     * Deletes the user data from disk.
+     *
+     * @param username the username of the user to delete
+     */
+    private void deleteUserData(String username) {
+        File userFile = new File(USER_DATA_DIR + File.separator + username + ".dat");
+        if (userFile.exists()) {
+            userFile.delete();
+        }
+    }
+
+    /**
      * Returns the map of users.
      *
      * @return the map of users
      */
-    public static Map<String, String> getUsers() {
+    public static Map<String, User> getUsers() {
         return users;
     }
 }

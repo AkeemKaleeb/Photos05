@@ -14,6 +14,11 @@ import view.LoginController;
  * @owner Maxime Deperrois
  */
 public class Photos extends Application {
+    /**
+     * Starts the JavaFX application and launches the primary stage
+     * 
+     * @param primaryStage the primary stage for the application
+     */
     @Override
     public void start(Stage primaryStage) throws Exception {
         System.out.println("FXML Path: " + getClass().getResource("/view/LoginView.fxml"));

@@ -1,6 +1,7 @@
 package model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -11,17 +12,19 @@ import java.util.List;
  * @owner Maxime Deperrois
  */
 public class Album implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private String name;
     private List<Photo> photos;
 
     /**
-     * Creates a new album with the given name and initial photos.
+     * Creates a new album with the given name.
      * 
      * @param name the name of the album
      */
-    public Album(String name, List<Photo> photos) {
+    public Album(String name) {
         this.name = name;
-        this.photos = photos;
+        this.photos = new ArrayList<>();
     }
 
     /**

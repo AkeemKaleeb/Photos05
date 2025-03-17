@@ -1,7 +1,5 @@
 package view;
 
-import java.util.Map;
-
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -9,6 +7,12 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import model.DataManager;
+import model.User;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * Controls the login view of the photo album application.
@@ -22,6 +26,21 @@ public class LoginController {
     private TextField usernameField;
 
     private Stage stage;
+    private static final String USER_DATA_DIR = System.getProperty("user.home") + File.separator + "PhotoAlbumUsers";
+    private static Map<String, User> users;
+
+    /**
+     * Initializes the controller and loads all existing users.
+     */
+    @FXML
+    public void initialize() {
+        try {
+            users = DataManager.loadAllUsers(USER_DATA_DIR);
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+            showAlert("Error", "Failed to load user data.");
+        }
+    }
 
     /**
      * Sets the stage for this controller.
@@ -32,6 +51,11 @@ public class LoginController {
         this.stage = stage;
     }
 
+    /**
+     * Handles the login button action.
+     * If the username is "admin", the admin view is loaded.
+     * Otherwise, the user is authenticated and the user view is loaded.
+     */
     @FXML
     private void handleLogin() {
         String username = usernameField.getText();
@@ -61,8 +85,8 @@ public class LoginController {
             }
         } else {
             // Authenticate user
-            Map<String, String> users = AdminController.getUsers();
-            if (!users.containsKey(username)) {
+            User user = users.get(username);
+            if (user == null) {
                 showAlert("Error", "Invalid username.");
                 return;
             }
@@ -75,6 +99,7 @@ public class LoginController {
                 // Get the UserController and pass the stage to it
                 UserController controller = loader.getController();
                 controller.setStage(stage);
+                controller.setUser(user);
 
                 // Set up the scene and stage
                 Scene scene = new Scene(root, 600, 400);
@@ -87,6 +112,12 @@ public class LoginController {
         }
     }
 
+    /**
+     * Shows an alert with the specified title and message.
+     *
+     * @param title the title of the alert
+     * @param message the message of the alert
+     */
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);

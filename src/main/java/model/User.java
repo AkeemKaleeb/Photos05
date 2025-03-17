@@ -12,6 +12,8 @@ import java.util.List;
  * @author Maxime Deperrois
  */
 public class User implements Serializable{
+    private static final long serialVersionUID = 1L;
+    
     private String username;
     private List<Album> albums;
 

@@ -19,6 +19,8 @@ import java.time.ZoneId;
  * @owner Maxime Deperrois
  */
 public class Photo implements Serializable{
+    private static final long serialVersionUID = 1L;
+
     private String caption;
     private String filePath;
     private LocalDateTime lastDateModified;

@@ -8,9 +8,14 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import model.Album;
+import model.User;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.io.File;
+import java.io.IOException;
+import model.DataManager;
 
 /**
  * Controls the user view of the photo album application.
@@ -28,6 +33,7 @@ public class UserController {
     private ListView<String> albumListView;
 
     private Stage stage;
+    private User user;
     private List<String> albums = new ArrayList<>();
 
     /**
@@ -39,6 +45,32 @@ public class UserController {
         this.stage = stage;
     }
 
+    /**
+     * Sets the user for this controller.
+     *
+     * @param user the user to set
+     */
+    public void setUser(User user) {
+        this.user = user;
+        loadUserAlbums();
+    }
+
+    /**
+     * Loads the user's albums into the ListView.
+     */
+    private void loadUserAlbums() {
+        albums.clear();
+        albumListView.getItems().clear();
+        for (Album album : user.getAlbums()) {
+            albums.add(album.getName());
+            albumListView.getItems().add(album.getName());
+        }
+    }
+
+    /**
+     * Allows the user to create a new album.
+     * The album name is entered in the text field and then added to the list view.
+     */
     @FXML
     private void handleCreateAlbum() {
         String albumName = albumNameField.getText();
@@ -50,11 +82,17 @@ public class UserController {
             showAlert("Error", "Album name already exists.");
             return;
         }
+        Album album = new Album(albumName);
+        user.addAlbum(album);
         albums.add(albumName);
         albumListView.getItems().add(albumName);
         albumNameField.clear();
     }
 
+    /**
+     * Allows the user to delete an album.
+     * The selected album in the list view is removed from the list view.
+     */
     @FXML
     private void handleDeleteAlbum() {
         String selectedAlbum = albumListView.getSelectionModel().getSelectedItem();
@@ -62,10 +100,18 @@ public class UserController {
             showAlert("Error", "Please select an album to delete.");
             return;
         }
-        albums.remove(selectedAlbum);
-        albumListView.getItems().remove(selectedAlbum);
+        Album album = findAlbumByName(selectedAlbum);
+        if (album != null) {
+            user.removeAlbum(album);
+            albums.remove(selectedAlbum);
+            albumListView.getItems().remove(selectedAlbum);
+        }
     }
 
+    /**
+     * Allows the user to rename an album.
+     * The selected album in the list view is renamed with the new name entered in the text field.
+     */
     @FXML
     private void handleRenameAlbum() {
         String selectedAlbum = albumListView.getSelectionModel().getSelectedItem();
@@ -82,12 +128,20 @@ public class UserController {
             showAlert("Error", "Album name already exists.");
             return;
         }
-        albums.remove(selectedAlbum);
-        albums.add(newAlbumName);
-        albumListView.getItems().set(albumListView.getSelectionModel().getSelectedIndex(), newAlbumName);
-        albumNameField.clear();
+        Album album = findAlbumByName(selectedAlbum);
+        if (album != null) {
+            album.setName(newAlbumName);
+            albums.remove(selectedAlbum);
+            albums.add(newAlbumName);
+            albumListView.getItems().set(albumListView.getSelectionModel().getSelectedIndex(), newAlbumName);
+            albumNameField.clear();
+        }
     }
 
+    /**
+     * Allows the user to open an album.
+     * The selected album in the list view is opened in the album view.
+     */
     @FXML
     private void handleOpenAlbum() {
         String selectedAlbum = albumListView.getSelectionModel().getSelectedItem();
@@ -116,9 +170,16 @@ public class UserController {
         }
     }
 
+    /**
+     * Allows the user to logout.
+     * The user data is saved before logging out.
+     */
     @FXML
     private void handleLogout() {
         try {
+            // Save user data before logging out
+            saveUserData();
+
             // Load the login view
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/LoginView.fxml"));
             Parent root = loader.load();
@@ -138,11 +199,45 @@ public class UserController {
         }
     }
 
+    /**
+     * Saves the user data to a file.
+     */
+    private void saveUserData() {
+        try {
+            String filePath = System.getProperty("user.home") + File.separator + "PhotoAlbumUsers" + File.separator + user.getUsername() + ".dat";
+            DataManager.saveUser(user, filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Error", "Failed to save user data.");
+        }
+    }
+
+    /**
+     * Shows an alert with the specified title and message.
+     *
+     * @param title   the title of the alert
+     * @param message the message of the alert
+     */
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    /**
+     * Finds an album by name.
+     *
+     * @param albumName the name of the album to find
+     * @return the album with the specified name, or null if not found
+     */
+    private Album findAlbumByName(String albumName) {
+        for (Album album : user.getAlbums()) {
+            if (album.getName().equals(albumName)) {
+                return album;
+            }
+        }
+        return null;
     }
 }

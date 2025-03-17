@@ -49,6 +49,10 @@ public class AlbumController {
         this.albumName = albumName;
     }
 
+    /**
+     * Allows the user to add a photo to the album.
+     * The photo path is entered in the text field and then added to the list view.
+     */
     @FXML
     private void handleAddPhoto() {
         String photoPath = photoPathField.getText();
@@ -65,6 +69,10 @@ public class AlbumController {
         photoPathField.clear();
     }
 
+    /**
+     * Allows the user to remove a photo from the album.
+     * The selected photo in the list view is removed from the list view.
+     */
     @FXML
     private void handleRemovePhoto() {
         String selectedPhoto = photoListView.getSelectionModel().getSelectedItem();
@@ -76,48 +84,58 @@ public class AlbumController {
         photoListView.getItems().remove(selectedPhoto);
     }
 
+    /**
+     * Allows the user to add a caption to a photo.
+     * The selected photo in the list view is captioned.
+     */
     @FXML
     private void handleCaptionPhoto() {
         // Implement caption photo functionality
         showAlert("Caption Photo", "This feature is not yet implemented.");
     }
 
+    /**
+     * Allows the user to tag a photo.
+     * The selected photo in the list view is tagged.
+     */
     @FXML
     private void handleTagPhoto() {
         // Implement tag photo functionality
         showAlert("Tag Photo", "This feature is not yet implemented.");
     }
 
+    /**
+     * Allows the user to delete a tag from a photo.
+     * The selected photo in the list view has a tag deleted.
+     */
     @FXML
     private void handleDeleteTag() {
         // Implement delete tag functionality
         showAlert("Delete Tag", "This feature is not yet implemented.");
     }
 
-    @FXML
-    private void handleCopyPhoto() {
-        // Implement copy photo functionality
-        showAlert("Copy Photo", "This feature is not yet implemented.");
-    }
-
+    /**
+     * Allows the user to move a photo to another album.
+     * The selected photo in the list view is moved to another album.
+    */
     @FXML
     private void handleMovePhoto() {
         // Implement move photo functionality
         showAlert("Move Photo", "This feature is not yet implemented.");
     }
 
+    /**
+     * Allows the user to search for photos.
+     */
     @FXML
     private void handleSearchPhotos() {
         // Implement search photos functionality
         showAlert("Search Photos", "This feature is not yet implemented.");
     }
 
-    @FXML
-    private void handleSlideshow() {
-        // Implement slideshow functionality
-        showAlert("Slideshow", "This feature is not yet implemented.");
-    }
-
+    /**
+     * Allows the user to go back to album view
+     */
     @FXML
     private void handleBackToAlbums() {
         try {
@@ -140,6 +158,12 @@ public class AlbumController {
         }
     }
 
+    /**
+     * Shows an alert with the specified title and message.
+     *
+     * @param title the title of the alert
+     * @param message the message of the alert
+     */
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
