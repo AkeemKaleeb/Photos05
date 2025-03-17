@@ -25,5 +25,5 @@
     <Label text="Username:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
     <TextField fx:id="usernameField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
 
-    <Button text="Submit" onAction="#handleSubmitButtonAction" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+    <Button text="Login" onAction="#handleLogin" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
 </GridPane>

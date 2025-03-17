@@ -9,3 +9,5 @@ Or, with Maven installed:
 ```
 mvn clean javafx:run
 ```
+
+Or, with the launch.json file in VSCode

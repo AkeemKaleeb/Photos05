@@ -3,6 +3,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import view.LoginController;
 
 /**
  * Represents the main application class for the photo album application.
@@ -14,10 +15,13 @@ import javafx.stage.Stage;
 public class Photos extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
-        System.out.println("FXML Path: " + getClass().getResource("/view/LoginView.fxml"));
-
         // Load the FXML File
-        Parent root = FXMLLoader.load(getClass().getResource("/view/LoginView.fxml"));
+        FXMLLoader loader= new FXMLLoader(getClass().getResource("/view/LoginView.fxml"));
+        Parent root = loader.load();
+
+        // Get the LoginController and pass the stage to it
+        LoginController controller = loader.getController();
+        controller.setStage(primaryStage);
 
         // Set up the scene and stage
         Scene scene = new Scene(root, 300, 200);

@@ -1,7 +1,11 @@
 package view;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 
 /**
  * Controls the login view of the photo album application.
@@ -14,10 +18,81 @@ public class LoginController {
     @FXML
     private TextField usernameField;
 
+    private Stage stage;
+
+    /**
+     * Sets the stage for this controller.
+     *
+     * @param stage the stage to set
+     */
+    public void setStage(Stage stage) {
+        this.stage = stage;
+    }
+
     @FXML
-    private void handleSubmitButtonAction() {
+    private void handleLogin() {
         String username = usernameField.getText();
-        System.out.println("Username: " + username);
-        // Add your login logic here
+
+        if(username == null || username.trim().isEmpty()) {
+            showAlert("Error", "Please enter a username.");
+            return;
+        }
+
+        if (username.equals("admin")) {
+            // Load the admin view
+            try {
+                // Load AdminView for admin user
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/AdminView.fxml"));
+                Parent root = loader.load();
+
+                // Get the AdminController and pass the stage to it
+                AdminController controller = loader.getController();
+                controller.setStage(stage);
+
+                // Set up the scene and stage
+                Scene scene = new Scene(root, 600, 400);
+                stage.setTitle("Photo Admin Interface");
+                stage.setScene(scene);
+                stage.show();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            // Load the user view
+            try {
+                showAlert("Success", "User Logged In: " + username);
+                /* 
+                // Load UserView for regular user
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/UserView.fxml"));
+                Parent root = loader.load();
+
+                // Get the UserController and pass the stage to it
+                UserController controller = loader.getController();
+                controller.setStage(stage);
+
+                // Set up the scene and stage
+                Scene scene = new Scene(root, 600, 400);
+                stage.setTitle("Photo Album User");
+                stage.setScene(scene);
+                stage.show();
+                */
+            } catch (Exception e) {
+                e.printStackTrace();
+                showAlert("Error", "Failed to load the interface");
+            }
+        }
+    }
+
+    /**
+     * Displays an alert dialog with the given title and message.
+     *
+     * @param title   the title of the alert
+     * @param message the message to display
+     */
+    private void showAlert(String title, String message) {
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION, message, javafx.scene.control.ButtonType.OK);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.showAndWait();
     }
 }
