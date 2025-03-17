@@ -1,9 +1,12 @@
 package view;
 
+import java.util.Map;
+
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
@@ -33,7 +36,7 @@ public class LoginController {
     private void handleLogin() {
         String username = usernameField.getText();
 
-        if(username == null || username.trim().isEmpty()) {
+        if (username == null || username.trim().isEmpty()) {
             showAlert("Error", "Please enter a username.");
             return;
         }
@@ -41,7 +44,6 @@ public class LoginController {
         if (username.equals("admin")) {
             // Load the admin view
             try {
-                // Load AdminView for admin user
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/AdminView.fxml"));
                 Parent root = loader.load();
 
@@ -58,11 +60,15 @@ public class LoginController {
                 e.printStackTrace();
             }
         } else {
+            // Authenticate user
+            Map<String, String> users = AdminController.getUsers();
+            if (!users.containsKey(username)) {
+                showAlert("Error", "Invalid username.");
+                return;
+            }
+
             // Load the user view
             try {
-                showAlert("Success", "User Logged In: " + username);
-                /* 
-                // Load UserView for regular user
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/UserView.fxml"));
                 Parent root = loader.load();
 
@@ -75,24 +81,17 @@ public class LoginController {
                 stage.setTitle("Photo Album User");
                 stage.setScene(scene);
                 stage.show();
-                */
             } catch (Exception e) {
                 e.printStackTrace();
-                showAlert("Error", "Failed to load the interface");
             }
         }
     }
 
-    /**
-     * Displays an alert dialog with the given title and message.
-     *
-     * @param title   the title of the alert
-     * @param message the message to display
-     */
     private void showAlert(String title, String message) {
-        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION, message, javafx.scene.control.ButtonType.OK);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);
+        alert.setContentText(message);
         alert.showAndWait();
     }
 }

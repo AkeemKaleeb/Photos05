@@ -3,6 +3,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+
 import view.LoginController;
 
 /**
@@ -15,6 +16,7 @@ import view.LoginController;
 public class Photos extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
+        System.out.println("FXML Path: " + getClass().getResource("/view/LoginView.fxml"));
         // Load the FXML File
         FXMLLoader loader= new FXMLLoader(getClass().getResource("/view/LoginView.fxml"));
         Parent root = loader.load();

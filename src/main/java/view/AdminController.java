@@ -1,12 +1,15 @@
 package view;
-  
+
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Controls the admin view of the photo album application.
@@ -16,7 +19,9 @@ import javafx.stage.Stage;
  * @owner Maxime Deperrois
  */
 public class AdminController {
+
     private Stage stage;
+    private static Map<String, String> users = new HashMap<>();
 
     /**
      * Sets the stage for this controller.
@@ -28,19 +33,21 @@ public class AdminController {
     }
 
     /**
-     * Handles the "List Users" button action.
-     */
-    @FXML
-    private void handleListUsers() {
-        showAlert("List Users", "This feature is not yet implemented.");
-    }
-
-    /**
      * Handles the "Create User" button action.
      */
     @FXML
     private void handleCreateUser() {
-        showAlert("Create User", "This feature is not yet implemented.");
+        String username = showUsernamePrompt();
+        if (username == null || username.trim().isEmpty()) {
+            showAlert("Error", "Please enter a username.");
+            return;
+        }
+        if (users.containsKey(username)) {
+            showAlert("Error", "Username already exists.");
+            return;
+        }
+        users.put(username, username); // For simplicity, using username as password
+        showAlert("Success", "User created successfully.");
     }
 
     /**
@@ -48,7 +55,29 @@ public class AdminController {
      */
     @FXML
     private void handleDeleteUser() {
-        showAlert("Delete User", "This feature is not yet implemented.");
+        String username = showUsernamePrompt();
+        if (username == null || username.trim().isEmpty()) {
+            showAlert("Error", "Please enter a username.");
+            return;
+        }
+        if (!users.containsKey(username)) {
+            showAlert("Error", "Username does not exist.");
+            return;
+        }
+        users.remove(username);
+        showAlert("Success", "User deleted successfully.");
+    }
+
+    /**
+     * Handles the "List Users" button action.
+     */
+    @FXML
+    private void handleListUsers() {
+        StringBuilder userList = new StringBuilder("Users:\n");
+        for (String user : users.keySet()) {
+            userList.append(user).append("\n");
+        }
+        showAlert("User List", userList.toString());
     }
 
     /**
@@ -83,9 +112,51 @@ public class AdminController {
      * @param message the message to display
      */
     private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);
+        alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    /**
+     * Shows the username prompt dialog and returns the entered username.
+     *
+     * @return the entered username
+     */
+    private String showUsernamePrompt() {
+        try {
+            // Load the FXML file and create a new stage for the dialog
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/UsernamePrompt.fxml"));
+            Parent page = loader.load();
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Enter Username");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(stage);
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            // Set the controller for the dialog
+            UsernamePromptController controller = loader.getController();
+            controller.setDialogStage(dialogStage);
+
+            // Show the dialog and wait until the user closes it
+            dialogStage.showAndWait();
+
+            return controller.isOkClicked() ? controller.getUsername() : null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Error", "Failed to load the username prompt.");
+            return null;
+        }
+    }
+
+    /**
+     * Returns the map of users.
+     *
+     * @return the map of users
+     */
+    public static Map<String, String> getUsers() {
+        return users;
     }
 }
