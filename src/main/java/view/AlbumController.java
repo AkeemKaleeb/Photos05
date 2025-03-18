@@ -1,17 +1,22 @@
 package view;
 
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.image.ImageView;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import model.Album;
 import model.Photo;
 import model.User;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -27,7 +32,7 @@ public class AlbumController {
     private TextField photoPathField;
 
     @FXML
-    private ListView<String> photoListView;
+    private ListView<Photo> photoListView;
 
     private Stage stage;
     private Album album;
@@ -49,7 +54,7 @@ public class AlbumController {
      */
     public void setAlbum(Album album) {
         this.album = album;
-        this.user = album.getUser(); // Assuming Album has a reference to User
+        this.user = album.getUser(); 
         loadAlbumPhotos();
     }
 
@@ -57,10 +62,27 @@ public class AlbumController {
      * Loads the album's photos into the ListView.
      */
     private void loadAlbumPhotos() {
-        photoListView.getItems().clear();
-        for (Photo photo : album.getPhotos()) {
-            photoListView.getItems().add(photo.getFilePath());
-        }
+        photoListView.setItems(FXCollections.observableArrayList(album.getPhotos()));
+        photoListView.setCellFactory(param -> new ListCell<Photo>() {
+            private final ImageView imageView = new ImageView();
+
+            @Override
+            protected void updateItem(Photo photo, boolean empty) {
+                super.updateItem(photo, empty);
+                if (empty || photo == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    File file = new File(photo.getFilePath());
+                    Image image = new Image(file.toURI().toString());
+                    imageView.setImage(image);
+                    imageView.setFitWidth(100);
+                    imageView.setFitHeight(100);
+                    setText(file.getName());
+                    setGraphic(imageView);
+                }
+            }
+        });
     }
 
     /**
@@ -76,7 +98,7 @@ public class AlbumController {
         try {
             Photo photo = new Photo(photoPath);
             album.addPhoto(photo);
-            photoListView.getItems().add(photoPath);
+            photoListView.getItems().add(photo);
             photoPathField.clear();
         } catch (IOException e) {
             e.printStackTrace();
@@ -89,16 +111,13 @@ public class AlbumController {
      */
     @FXML
     private void handleRemovePhoto() {
-        String selectedPhoto = photoListView.getSelectionModel().getSelectedItem();
+        Photo selectedPhoto = photoListView.getSelectionModel().getSelectedItem();
         if (selectedPhoto == null) {
             showAlert("Error", "Please select a photo to remove.");
             return;
         }
-        Photo photo = findPhotoByPath(selectedPhoto);
-        if (photo != null) {
-            album.removePhoto(photo);
-            photoListView.getItems().remove(selectedPhoto);
-        }
+        album.removePhoto(selectedPhoto);
+        photoListView.getItems().remove(selectedPhoto);
     }
 
     /**

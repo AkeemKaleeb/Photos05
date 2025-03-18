@@ -35,8 +35,6 @@ public class Photos extends Application {
         // TODO: Check if stock user exists already, if not, create it
         loadStockUser();
 
-        System.out.println("FXML Path: " + getClass().getResource("/view/LoginView.fxml"));
-
         // Load the FXML File
         FXMLLoader loader= new FXMLLoader(getClass().getResource("/view/LoginView.fxml"));
         Parent root = loader.load();
@@ -59,7 +57,11 @@ public class Photos extends Application {
         File stockPhotosDir = new File(STOCK_PHOTOS_DIR);
         if(stockPhotosDir.exists() && stockPhotosDir.isDirectory()) {
             for(File file : stockPhotosDir.listFiles()) {
-                if(file.isFile() && file.getName().endsWith(".jpg")) {
+                if(file.isFile() && (file.getName().endsWith(".jpg") || 
+                                    file.getName().endsWith(".jpeg") || 
+                                    file.getName().endsWith(".png") || 
+                                    file.getName().endsWith(".gif") ||
+                                    file.getName().endsWith(".bmp"))) {
                     try {
                         Photo photo = new Photo(file.getAbsolutePath());
                         stockAlbum.addPhoto(photo);

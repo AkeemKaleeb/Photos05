@@ -205,7 +205,6 @@ public class UserController {
     private void saveUserData() {
         try {
             String filePath = System.getProperty("user.home") + File.separator + "PhotoAlbumUsers" + File.separator + user.getUsername() + ".dat";
-            System.out.println(filePath);
             DataManager.saveUser(user, filePath);
         } catch (IOException e) {
             e.printStackTrace();
