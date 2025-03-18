@@ -1,9 +1,16 @@
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-
+import model.Album;
+import model.DataManager;
+import model.Photo;
+import model.User;
 import view.LoginController;
 
 /**
@@ -14,6 +21,10 @@ import view.LoginController;
  * @owner Maxime Deperrois
  */
 public class Photos extends Application {
+    private static final String STOCK_USER = "stock";
+    private static final String STOCK_ALBUM = "stock";
+    private static final String STOCK_PHOTOS_DIR = "/data/stockPhotos";
+
     /**
      * Starts the JavaFX application and launches the primary stage
      * 
@@ -21,7 +32,11 @@ public class Photos extends Application {
      */
     @Override
     public void start(Stage primaryStage) throws Exception {
+        // TODO: Check if stock user exists already, if not, create it
+        loadStockUser();
+
         System.out.println("FXML Path: " + getClass().getResource("/view/LoginView.fxml"));
+
         // Load the FXML File
         FXMLLoader loader= new FXMLLoader(getClass().getResource("/view/LoginView.fxml"));
         Parent root = loader.load();
@@ -35,6 +50,34 @@ public class Photos extends Application {
         primaryStage.setTitle("Photo Album Login");
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    private void loadStockUser() {
+        User stockUser = new User(STOCK_USER);
+        Album stockAlbum = new Album(STOCK_ALBUM);
+
+        File stockPhotosDir = new File(STOCK_PHOTOS_DIR);
+        if(stockPhotosDir.exists() && stockPhotosDir.isDirectory()) {
+            for(File file : stockPhotosDir.listFiles()) {
+                if(file.isFile() && file.getName().endsWith(".jpg")) {
+                    try {
+                        Photo photo = new Photo(file.getAbsolutePath());
+                        stockAlbum.addPhoto(photo);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        stockUser.addAlbum(stockAlbum);
+
+        // Save the stock user to a file in the project directory
+        try {
+            DataManager.saveUser(stockUser, Paths.get("data", "stockUser.dat").toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**

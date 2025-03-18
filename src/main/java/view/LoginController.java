@@ -12,6 +12,7 @@ import model.User;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Map;
 
 /**
@@ -41,7 +42,7 @@ public class LoginController {
             showAlert("Error", "Failed to load user data.");
         }
     }
-
+    
     /**
      * Sets the stage for this controller.
      *
@@ -83,7 +84,30 @@ public class LoginController {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        } else {
+        } 
+        else if(username.equals("stock")) {
+            // Load the stock user view
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/UserView.fxml"));
+                Parent root = loader.load();
+
+                // Get the StockUserController and pass the stage to it
+                UserController controller = loader.getController();
+                controller.setStage(stage);
+
+                User stockUser = DataManager.loadUser(Paths.get("data", "stockUser.dat").toString());
+                controller.setUser(stockUser);
+
+                // Set up the scene and stage
+                Scene scene = new Scene(root, 600, 400);
+                stage.setTitle("Photo Album Stock User");
+                stage.setScene(scene);
+                stage.show();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        else {
             // Authenticate user
             User user = users.get(username);
             if (user == null) {
