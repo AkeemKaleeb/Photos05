@@ -95,7 +95,7 @@ public class LoginController {
                 UserController controller = loader.getController();
                 controller.setStage(stage);
 
-                User stockUser = DataManager.loadUser(Paths.get("data", "stockUser.dat").toString());
+                User stockUser = DataManager.loadUser("data/stockUser.dat");
                 controller.setUser(stockUser);
 
                 // Set up the scene and stage
@@ -108,15 +108,15 @@ public class LoginController {
             }
         }
         else {
-            // Authenticate user
-            User user = users.get(username);
-            if (user == null) {
-                showAlert("Error", "Invalid username.");
-                return;
-            }
-
             // Load the user view
             try {
+                String filePath = System.getProperty("user.home") + File.separator + "PhotoAlbumUsers" + File.separator + username + ".dat";
+                User user = DataManager.loadUser(filePath);
+                if (user == null) {
+                    showAlert("Error", "Invalid username.");
+                    return;
+                }
+                
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/UserView.fxml"));
                 Parent root = loader.load();
 

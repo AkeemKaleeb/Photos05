@@ -23,7 +23,7 @@ import view.LoginController;
 public class Photos extends Application {
     private static final String STOCK_USER = "stock";
     private static final String STOCK_ALBUM = "stock";
-    private static final String STOCK_PHOTOS_DIR = "/data/stockPhotos";
+    private static final String STOCK_PHOTOS_DIR = "data/stockPhotos";
 
     /**
      * Starts the JavaFX application and launches the primary stage
@@ -32,7 +32,7 @@ public class Photos extends Application {
      */
     @Override
     public void start(Stage primaryStage) throws Exception {
-        // TODO: Check if stock user exists already, if not, create it
+        // Check if stock user exists already, if not, create it
         loadStockUser();
 
         // Load the FXML File
@@ -51,34 +51,63 @@ public class Photos extends Application {
     }
 
     private void loadStockUser() {
-        User stockUser = new User(STOCK_USER);
-        Album stockAlbum = new Album(STOCK_ALBUM);
+        try {
+            // Check if the stock user file exists
+            String stockUserFilePath = Paths.get("data", "stockUser.dat").toString();
+            File stockUserFile = new File(stockUserFilePath);
+            
 
-        File stockPhotosDir = new File(STOCK_PHOTOS_DIR);
-        if(stockPhotosDir.exists() && stockPhotosDir.isDirectory()) {
-            for(File file : stockPhotosDir.listFiles()) {
-                if(file.isFile() && (file.getName().endsWith(".jpg") || 
-                                    file.getName().endsWith(".jpeg") || 
-                                    file.getName().endsWith(".png") || 
-                                    file.getName().endsWith(".gif") ||
-                                    file.getName().endsWith(".bmp"))) {
-                    try {
-                        Photo photo = new Photo(file.getAbsolutePath());
-                        stockAlbum.addPhoto(photo);
-                    } catch (Exception e) {
-                        e.printStackTrace();
+            // Create Stock User and Album
+            User stockUser;
+            Album stockAlbum;
+
+            if (stockUserFile.exists()) {
+                // Load the stock user from the file
+                stockUser = DataManager.loadUser(stockUserFilePath);
+    
+                // Check if the stock album exists
+                stockAlbum = stockUser.getAlbums().stream()
+                    .filter(album -> album.getName().equals(STOCK_ALBUM))
+                    .findFirst()
+                    .orElse(null);
+    
+                if (stockAlbum == null) {
+                    // Create the stock album if it doesn't exist
+                    stockAlbum = new Album(STOCK_ALBUM);
+                    stockUser.addAlbum(stockAlbum);
+                }
+            } else {
+                // Create the stock user and album
+                stockUser = new User(STOCK_USER);
+                stockAlbum = new Album(STOCK_ALBUM);
+                stockUser.addAlbum(stockAlbum);
+            }
+    
+            // Populate the stock album with stock images
+            File stockPhotosDir = new File(STOCK_PHOTOS_DIR);
+            if (stockPhotosDir.exists() && stockPhotosDir.isDirectory()) {
+                for (File file : stockPhotosDir.listFiles()) {
+                    if (file.isFile()) {
+                        String fileName = file.getName().toLowerCase();
+                        if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg") || 
+                            fileName.endsWith(".png") || fileName.endsWith(".bmp") || 
+                            fileName.endsWith(".gif")) {
+                            Photo photo = new Photo(file.getAbsolutePath());
+                            if (!stockAlbum.getPhotos().contains(photo)) {
+                                stockAlbum.addPhoto(photo);
+                            }
+                        }
                     }
                 }
+            } else {
+                System.err.println("Stock photos directory does not exist: " + STOCK_PHOTOS_DIR);
             }
-        }
-
-        stockUser.addAlbum(stockAlbum);
-
-        // Save the stock user to a file in the project directory
-        try {
-            DataManager.saveUser(stockUser, Paths.get("data", "stockUser.dat").toString());
-        } catch (IOException e) {
+    
+            // Save the stock user back to the file
+            DataManager.saveUser(stockUser, stockUserFilePath);
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
+            System.err.println("Failed to load or initialize the stock user.");
         }
     }
 

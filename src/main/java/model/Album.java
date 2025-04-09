@@ -61,7 +61,9 @@ public class Album implements Serializable {
      * @param photo the photo to add
      */
     public void addPhoto(Photo photo) {
-        photos.add(photo);
+        if(!photos.contains(photo)) {
+            photos.add(photo);
+        }
     }
 
     /**

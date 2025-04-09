@@ -78,7 +78,7 @@ public class AlbumController {
                     imageView.setImage(image);
                     imageView.setFitWidth(100);
                     imageView.setFitHeight(100);
-                    setText(file.getName());
+                    setText(photo.getCaption() != null ? photo.getCaption() : file.getName());
                     setGraphic(imageView);
                 }
             }
@@ -95,8 +95,20 @@ public class AlbumController {
             showAlert("Error", "Please enter a photo path.");
             return;
         }
+
+        File file = new File(photoPath);
+        if (!file.exists() || !file.isFile()) {
+            showAlert("Error", "Invalid photo path.");
+            return;
+        }
+
         try {
             Photo photo = new Photo(photoPath);
+            if(album.getPhotos().contains(photo)) {
+                showAlert("Error", "Photo already exists in the album.");
+                return;
+            }
+
             album.addPhoto(photo);
             photoListView.getItems().add(photo);
             photoPathField.clear();
