@@ -8,5 +8,5 @@ package view;
  * @owner Maxime Deperrois
  */
 public class PhotoController {
-    
+    // TODO: Implement the photo view controller logic
 }
