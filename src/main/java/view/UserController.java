@@ -14,6 +14,7 @@ import model.User;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,8 +63,9 @@ public class UserController {
         albums.clear();
         albumListView.getItems().clear();
         for (Album album : user.getAlbums()) {
+            String displayName = String.format("%s (%d photos)", album.getName(), album.getPhotos().size());
             albums.add(album.getName());
-            albumListView.getItems().add(album.getName());
+            albumListView.getItems().add(displayName);
         }
     }
 
@@ -140,12 +142,15 @@ public class UserController {
      */
     @FXML
     private void handleOpenAlbum() {
-        String selectedAlbum = albumListView.getSelectionModel().getSelectedItem();
-        if (selectedAlbum == null) {
+        String selectedDisplayName = albumListView.getSelectionModel().getSelectedItem();
+        if (selectedDisplayName == null) {
             showAlert("Error", "Please select an album to open.");
             return;
         }
-        Album album = findAlbumByName(selectedAlbum);
+
+        String actualAlbumName = selectedDisplayName.split(" \\(")[0];
+
+        Album album = findAlbumByName(actualAlbumName);
         if (album == null) {
             showAlert("Error", "Album not found.");
             return;
@@ -162,7 +167,7 @@ public class UserController {
 
             // Set up the scene and stage
             Scene scene = new Scene(root, 600, 400);
-            stage.setTitle("Album: " + selectedAlbum);
+            stage.setTitle("Album: " + album.getName());
             stage.setScene(scene);
             stage.show();
         } catch (Exception e) {
@@ -178,7 +183,12 @@ public class UserController {
     private void handleLogout() {
         try {
             // Save user data before logging out
-            saveUserData();
+            if(!user.getUsername().equals("stock")) {
+                saveUserData();
+            }
+            else {
+                saveStockUserData(user);
+            }
 
             // Load the login view
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/LoginView.fxml"));
@@ -209,6 +219,19 @@ public class UserController {
         } catch (IOException e) {
             e.printStackTrace();
             showAlert("Error", "Failed to save user data.");
+        }
+    }
+
+    /**
+     * Saves the stock user data to a file.
+     * @param stockUser the stock user to save
+     */
+    private void saveStockUserData(User stockUser) {
+        try {
+            String filePath = Paths.get("data", "stockUser.dat").toString();
+            DataManager.saveUser(stockUser, filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
