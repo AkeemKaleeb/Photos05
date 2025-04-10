@@ -41,4 +41,29 @@ public class Tag implements Serializable {
     public String getValue() {
         return value;
     }
+
+    /**
+     * Checks if this tag is equal to another object.
+     * Two tags are considered equal if both their name and value are the same.
+     * 
+     * @param obj the object to compare
+     * @return true if the tags are equal, false otherwise
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Tag tag = (Tag) obj;
+        return name.equals(tag.name) && value.equals(tag.value);
+    }
+
+    /**
+     * Returns the hash code of the tag.
+     * 
+     * @return the hash code of the tag
+     */
+    @Override
+    public int hashCode() {
+        return name.hashCode() + value.hashCode();
+    }
 }
