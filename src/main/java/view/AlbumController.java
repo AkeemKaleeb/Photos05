@@ -6,18 +6,26 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.image.ImageView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import model.Album;
 import model.Photo;
 import model.User;
+import model.Tag;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Controls the album view of the photo album application.
@@ -137,7 +145,33 @@ public class AlbumController {
      */
     @FXML
     private void handleCaptionPhoto() {
-        // Implement caption photo functionality
+        Photo selectedPhoto = photoListView.getSelectionModel().getSelectedItem();
+        if (selectedPhoto == null) {
+            showAlert("Error", "Please select a photo to add or edit a caption.");
+            return;
+        }
+
+        // Prompt user to enter a new caption
+        TextInputDialog captionDialog = new TextInputDialog(selectedPhoto.getCaption());
+        captionDialog.setTitle("Edit Caption");
+        captionDialog.setHeaderText("Enter a new caption for the selected photo:");
+        captionDialog.setContentText("Caption:");
+        Optional<String> captionResult = captionDialog.showAndWait();
+
+        if (!captionResult.isPresent() || captionResult.get().trim().isEmpty()) {
+            showAlert("Error", "Caption cannot be empty.");
+            return;
+        }
+
+        String newCaption = captionResult.get().trim();
+
+        // Update the photo's caption
+        selectedPhoto.setCaption(newCaption);
+
+        // Refresh the ListView to reflect the updated caption
+        photoListView.refresh();
+
+        showAlert("Success", "Caption updated successfully.");
     }
 
     /**
@@ -145,7 +179,53 @@ public class AlbumController {
      */
     @FXML
     private void handleTagPhoto() {
-        // Implement tag photo functionality
+        Photo selectedPhoto = photoListView.getSelectionModel().getSelectedItem();
+        if (selectedPhoto == null) {
+            showAlert("Error", "Please select a photo to tag.");
+            return;
+        }
+
+        // Predefined tag types
+        List<String> predefinedTagTypes = Arrays.asList("location", "person", "activity");
+
+        // Prompt user to select or enter a tag type
+        ChoiceDialog<String> tagTypeDialog = new ChoiceDialog<>("location", predefinedTagTypes);
+        tagTypeDialog.setTitle("Add Tag");
+        tagTypeDialog.setHeaderText("Select or Enter Tag Type");
+        tagTypeDialog.setContentText("Tag Type:");
+        Optional<String> tagTypeResult = tagTypeDialog.showAndWait();
+
+        if (!tagTypeResult.isPresent() || tagTypeResult.get().trim().isEmpty()) {
+            showAlert("Error", "Tag type cannot be empty.");
+            return;
+        }
+
+        String tagType = tagTypeResult.get().trim();
+
+        // Prompt user for the tag value
+        TextInputDialog tagValueDialog = new TextInputDialog();
+        tagValueDialog.setTitle("Add Tag");
+        tagValueDialog.setHeaderText("Enter Tag Value");
+        tagValueDialog.setContentText("Tag Value:");
+        Optional<String> tagValueResult = tagValueDialog.showAndWait();
+
+        if (!tagValueResult.isPresent() || tagValueResult.get().trim().isEmpty()) {
+            showAlert("Error", "Tag value cannot be empty.");
+            return;
+        }
+
+        String tagValue = tagValueResult.get().trim();
+
+        // Check if the tag already exists
+        Tag newTag = new Tag(tagType, tagValue);
+        if (selectedPhoto.getTags().contains(newTag)) {
+            showAlert("Error", "This tag already exists for the selected photo.");
+            return;
+        }
+
+        // Add the tag to the photo
+        selectedPhoto.addTag(newTag);
+        showAlert("Success", "Tag added successfully.");
     }
 
     /**
@@ -153,7 +233,51 @@ public class AlbumController {
      */
     @FXML
     private void handleDeleteTag() {
-        // Implement delete tag functionality
+        Photo selectedPhoto = photoListView.getSelectionModel().getSelectedItem();
+        if (selectedPhoto == null) {
+            showAlert("Error", "Please select a photo to delete a tag from.");
+            return;
+        }
+
+        // Check if the photo has any tags
+        if (selectedPhoto.getTags().isEmpty()) {
+            showAlert("Error", "This photo has no tags to delete.");
+            return;
+        }
+
+        // Prompt user to select a tag to delete
+        List<String> tagOptions = new ArrayList<>();
+        for (Tag tag : selectedPhoto.getTags()) {
+            tagOptions.add(tag.getName() + ": " + tag.getValue());
+        }
+
+        ChoiceDialog<String> tagDialog = new ChoiceDialog<>(tagOptions.get(0), tagOptions);
+        tagDialog.setTitle("Delete Tag");
+        tagDialog.setHeaderText("Select a Tag to Delete");
+        tagDialog.setContentText("Tag:");
+        Optional<String> tagResult = tagDialog.showAndWait();
+
+        if (!tagResult.isPresent()) {
+            return; // User canceled the dialog
+        }
+
+        String selectedTag = tagResult.get();
+        Tag tagToDelete = null;
+
+        // Find the tag object corresponding to the selected string
+        for (Tag tag : selectedPhoto.getTags()) {
+            if ((tag.getName() + ": " + tag.getValue()).equals(selectedTag)) {
+                tagToDelete = tag;
+                break;
+            }
+        }
+
+        if (tagToDelete != null) {
+            selectedPhoto.removeTag(tagToDelete);
+            showAlert("Success", "Tag deleted successfully.");
+        } else {
+            showAlert("Error", "Failed to delete the selected tag.");
+        }
     }
 
     /**
