@@ -175,6 +175,20 @@ public class AlbumController {
     }
 
     /**
+     * Handles showing the date of the photo
+     */
+    @FXML
+    private void handleShowDate() {
+        // TODO: Show the Date in application
+        Photo selectedPhoto = photoListView.getSelectionModel().getSelectedItem();
+        if (selectedPhoto == null) {
+            showAlert("Error", "Please select a photo to view the date.");
+            return;
+        }
+        showAlert("Photo Date", "Date: " + selectedPhoto.getLastModifiedDate());
+    }
+
+    /**
      * Handles the "Tag Photo" button action.
      */
     @FXML
@@ -285,7 +299,7 @@ public class AlbumController {
      */
     @FXML
     private void handleMovePhoto() {
-        // Implement move photo functionality
+        // TODO: Implement move photo functionality
     }
 
     /**
@@ -293,7 +307,7 @@ public class AlbumController {
      */
     @FXML
     private void handleSearchPhotos() {
-        // Implement search photos functionality
+        // TODO: Implement search photos functionality
     }
 
     /**
@@ -335,20 +349,5 @@ public class AlbumController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
-    }
-
-    /**
-     * Finds a photo in the album by its file path.
-     *
-     * @param photoPath the file path of the photo to find
-     * @return the photo with the specified file path, or null if not found
-     */
-    private Photo findPhotoByPath(String photoPath) {
-        for (Photo photo : album.getPhotos()) {
-            if (photo.getFilePath().equals(photoPath)) {
-                return photo;
-            }
-        }
-        return null;
     }
 }

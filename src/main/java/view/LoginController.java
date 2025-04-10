@@ -12,7 +12,6 @@ import model.User;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.Map;
 
 /**
@@ -28,8 +27,9 @@ public class LoginController {
 
     private Stage stage;
     private static final String USER_DATA_DIR = System.getProperty("user.home") + File.separator + "PhotoAlbumUsers";
-    private static Map<String, User> users;
-
+    @SuppressWarnings("unused")
+    private Map<String, User> users;
+    
     /**
      * Initializes the controller and loads all existing users.
      */

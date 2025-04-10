@@ -32,8 +32,12 @@ public class Photos extends Application {
      */
     @Override
     public void start(Stage primaryStage) throws Exception {
-        // Check if stock user exists already, if not, create it
-        loadStockUser();
+        // Check if the stock user file exists, if not, initialize it
+        String stockUserFilePath = Paths.get("data", "stockUser.dat").toString();
+        File stockUserFile = new File(stockUserFilePath);
+        if (!stockUserFile.exists()) {
+            loadStockUser();
+        }
 
         // Load the FXML File
         FXMLLoader loader= new FXMLLoader(getClass().getResource("/view/LoginView.fxml"));
