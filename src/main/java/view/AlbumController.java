@@ -176,6 +176,20 @@ public class AlbumController {
     }
 
     /**
+      * Handles showing the date of the photo
+      */
+     @FXML
+     private void handleShowDate() {
+         // TODO: Show the Date in application
+         Photo selectedPhoto = photoListView.getSelectionModel().getSelectedItem();
+         if (selectedPhoto == null) {
+             showAlert("Error", "Please select a photo to view the date.");
+             return;
+         }
+         showAlert("Photo Date", "Date: " + selectedPhoto.getLastModifiedDate());
+     }
+    
+    /**
      * Handles the "Tag Photo" button action.
      */
     @FXML
