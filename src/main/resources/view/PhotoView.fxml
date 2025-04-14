@@ -11,12 +11,10 @@
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.171" fx:controller="view.PhotoController">
-    <!-- Left: Image Display -->
     <left>
         <ImageView fx:id="photoImageView" fitWidth="400" fitHeight="400" preserveRatio="true" />
     </left>
 
-    <!-- Right: Information Box -->
     <right>
         <VBox spacing="10">
             <padding>
@@ -33,15 +31,12 @@
             </HBox>
             <HBox spacing="5">
                 <Label text="Caption:" />
-                <TextField fx:id="captionField" />
-                <Button text="Update" onAction="#handleUpdateCaption" />
+                <TextField fx:id="captionField" onAction="#handleUpdateCaption" onKeyReleased="#handleUpdateCaption" />
             </HBox>
-            <Label text="Tags:" />
+            <HBox spacing="10">
+                <Button text="Tags" onAction="#handleTagPhoto" />
+            </HBox>
             <ListView fx:id="tagsListView" prefHeight="100" />
-            <HBox spacing="5">
-                <TextField fx:id="tagField" promptText="Add Tag" />
-                <Button text="Add" onAction="#handleAddTag" />
-            </HBox>
             <HBox spacing="10" alignment="center">
                 <Button fx:id="previousButton" text="Previous" onAction="#handlePreviousPhoto" />
                 <Button fx:id="nextButton" text="Next" onAction="#handleNextPhoto" />

@@ -5,6 +5,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ChoiceDialog;
+import javafx.scene.control.ListView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.DataManager;
@@ -14,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Controls the admin view of the photo album application.
@@ -28,6 +32,9 @@ public class AdminController {
     private static final String USER_DATA_DIR = System.getProperty("user.home") + File.separator + "PhotoAlbumUsers";
     private static Map<String, User> users = new HashMap<>();
 
+    @FXML
+    private ListView<String> userListView;
+
     /**
      * Initializes the controller and loads all existing users.
      */
@@ -35,6 +42,7 @@ public class AdminController {
     public void initialize() {
         try {
             users = DataManager.loadAllUsers(USER_DATA_DIR);
+            loadUsersIntoListView();
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
             showAlert("Error", "Failed to load user data.");
@@ -67,6 +75,7 @@ public class AdminController {
         User user = new User(username);
         users.put(username, user);
         saveUserData(user);
+        loadUsersIntoListView();
         showAlert("Success", "User created successfully.");
     }
 
@@ -75,30 +84,49 @@ public class AdminController {
      */
     @FXML
     private void handleDeleteUser() {
-        String username = showUsernamePrompt();
-        if (username == null || username.trim().isEmpty()) {
-            showAlert("Error", "Please enter a username.");
+        if (users.isEmpty()) {
+            showAlert("Error", "No users available to delete.");
             return;
         }
-        if (!users.containsKey(username)) {
-            showAlert("Error", "Username does not exist.");
+
+        // Create a ChoiceDialog with the list of all users
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(null, users.keySet());
+        dialog.setTitle("Delete User");
+        dialog.setHeaderText("Select a user to delete:");
+        dialog.setContentText("User:");
+
+        Optional<String> result = dialog.showAndWait();
+        if (result.isEmpty()) {
+            return; // User canceled the dialog
+        }
+
+        String selectedUser = result.get();
+        if (!users.containsKey(selectedUser)) {
+            showAlert("Error", "The selected user does not exist.");
             return;
         }
-        users.remove(username);
-        deleteUserData(username);
-        showAlert("Success", "User deleted successfully.");
+
+        // Confirm deletion
+        Alert confirmationAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmationAlert.setTitle("Confirm Deletion");
+        confirmationAlert.setHeaderText(null);
+        confirmationAlert.setContentText("Are you sure you want to delete the user \"" + selectedUser + "\"?");
+        Optional<ButtonType> confirmationResult = confirmationAlert.showAndWait();
+
+        if (confirmationResult.isPresent() && confirmationResult.get() == ButtonType.OK) {
+            users.remove(selectedUser);
+            deleteUserData(selectedUser);
+            loadUsersIntoListView(); // Refresh the ListView
+            showAlert("Success", "User \"" + selectedUser + "\" deleted successfully.");
     }
+}
 
     /**
-     * Handles the "List Users" button action.
+     * Loads all users into the ListView.
      */
-    @FXML
-    private void handleListUsers() {
-        StringBuilder userList = new StringBuilder("Users:\n");
-        for (String user : users.keySet()) {
-            userList.append(user).append("\n");
-        }
-        showAlert("User List", userList.toString());
+    private void loadUsersIntoListView() {
+        userListView.getItems().clear();
+        userListView.getItems().addAll(users.keySet());
     }
 
     /**

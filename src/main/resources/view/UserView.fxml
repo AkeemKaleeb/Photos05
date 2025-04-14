@@ -12,14 +12,12 @@
         <Insets top="10" right="10" bottom="10" left="10"/>
     </padding>
     <HBox spacing="10">
-        <TextField fx:id="albumNameField" promptText="Album Name"/>
         <Button text="Create Album" onAction="#handleCreateAlbum"/>
         <Button text="Delete Album" onAction="#handleDeleteAlbum"/>
         <Button text="Rename Album" onAction="#handleRenameAlbum"/>
     </HBox>
     <ListView fx:id="albumListView" onMouseClicked="#handleAlbumDoubleClick"/>
     <HBox spacing="10">
-        <Button text="Open Album" onAction="#handleOpenAlbum"/>
         <Button text="Logout" onAction="#handleLogout"/>
     </HBox>
 </VBox>

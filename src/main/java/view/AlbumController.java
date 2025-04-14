@@ -99,28 +99,30 @@ public class AlbumController {
      */
     @FXML
     private void handleAddPhoto() {
-        String photoPath = photoPathField.getText();
-        if (photoPath == null || photoPath.trim().isEmpty()) {
-            showAlert("Error", "Please enter a photo path.");
+        // Prompt user to select a photo file
+        javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
+        fileChooser.setTitle("Select Photo");
+        fileChooser.getExtensionFilters().addAll(
+            new javafx.stage.FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp")
+        );
+        File selectedFile = fileChooser.showOpenDialog(stage);
+
+        if (selectedFile == null) {
+            showAlert("Error", "No file selected.");
             return;
         }
 
-        File file = new File(photoPath);
-        if (!file.exists() || !file.isFile()) {
-            showAlert("Error", "Invalid photo path.");
-            return;
-        }
+        String photoPath = selectedFile.getAbsolutePath();
 
         try {
             Photo photo = new Photo(photoPath);
-            if(album.getPhotos().contains(photo)) {
+            if (album.getPhotos().contains(photo)) {
                 showAlert("Error", "Photo already exists in the album.");
                 return;
             }
 
             album.addPhoto(photo);
             photoListView.getItems().add(photo);
-            photoPathField.clear();
         } catch (IOException e) {
             e.printStackTrace();
             showAlert("Error", "Failed to add photo.");
@@ -195,91 +197,87 @@ public class AlbumController {
     private void handleTagPhoto() {
         Photo selectedPhoto = photoListView.getSelectionModel().getSelectedItem();
         if (selectedPhoto == null) {
-            showAlert("Error", "Please select a photo to tag.");
+            showAlert("Error", "Please select a photo to manage tags.");
             return;
         }
 
-        // Predefined tag types
-        List<String> predefinedTagTypes = Arrays.asList("location", "person", "activity");
+        // Prompt the user to choose between adding or deleting a tag
+        List<String> options = List.of("Add Tag", "Delete Tag");
+        ChoiceDialog<String> dialog = new ChoiceDialog<>("Add Tag", options);
+        dialog.setTitle("Tag Photo");
+        dialog.setHeaderText("Choose an action:");
+        dialog.setContentText("What would you like to do?");
 
-        // Prompt user to select or enter a tag type
-        ChoiceDialog<String> tagTypeDialog = new ChoiceDialog<>("location", predefinedTagTypes);
-        tagTypeDialog.setTitle("Add Tag");
-        tagTypeDialog.setHeaderText("Select or Enter Tag Type");
-        tagTypeDialog.setContentText("Tag Type:");
-        Optional<String> tagTypeResult = tagTypeDialog.showAndWait();
+        Optional<String> result = dialog.showAndWait();
+        if (result.isEmpty()) {
+            return; // User canceled
+        }
 
-        if (!tagTypeResult.isPresent() || tagTypeResult.get().trim().isEmpty()) {
-            showAlert("Error", "Tag type cannot be empty.");
+        String choice = result.get();
+        if (choice.equals("Add Tag")) {
+            addTagToPhoto(selectedPhoto);
+        } else if (choice.equals("Delete Tag")) {
+            deleteTagFromPhoto(selectedPhoto);
+        }
+    }
+
+    private void addTagToPhoto(Photo photo) {
+        // Prompt the user to enter a tag in the format "name:value"
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Add Tag");
+        dialog.setHeaderText("Enter a tag in the format 'name:value':");
+        dialog.setContentText("Tag:");
+
+        Optional<String> result = dialog.showAndWait();
+        if (result.isEmpty() || result.get().trim().isEmpty()) {
+            showAlert("Error", "Tag cannot be empty.");
             return;
         }
 
-        String tagType = tagTypeResult.get().trim();
-
-        // Prompt user for the tag value
-        TextInputDialog tagValueDialog = new TextInputDialog();
-        tagValueDialog.setTitle("Add Tag");
-        tagValueDialog.setHeaderText("Enter Tag Value");
-        tagValueDialog.setContentText("Tag Value:");
-        Optional<String> tagValueResult = tagValueDialog.showAndWait();
-
-        if (!tagValueResult.isPresent() || tagValueResult.get().trim().isEmpty()) {
-            showAlert("Error", "Tag value cannot be empty.");
+        String[] tagParts = result.get().trim().split(":");
+        if (tagParts.length != 2) {
+            showAlert("Error", "Tag must be in the format 'name:value'.");
             return;
         }
 
-        String tagValue = tagValueResult.get().trim();
-
-        // Check if the tag already exists
-        Tag newTag = new Tag(tagType, tagValue);
-        if (selectedPhoto.getTags().contains(newTag)) {
-            showAlert("Error", "This tag already exists for the selected photo.");
+        Tag newTag = new Tag(tagParts[0].trim(), tagParts[1].trim());
+        if (photo.getTags().contains(newTag)) {
+            showAlert("Error", "This tag already exists.");
             return;
         }
 
-        // Add the tag to the photo
-        selectedPhoto.addTag(newTag);
+        photo.addTag(newTag);
         showAlert("Success", "Tag added successfully.");
     }
 
-    /**
-     * Handles the "Delete Tag" button action.
-     */
-    @FXML
-    private void handleDeleteTag() {
-        Photo selectedPhoto = photoListView.getSelectionModel().getSelectedItem();
-        if (selectedPhoto == null) {
-            showAlert("Error", "Please select a photo to delete a tag from.");
-            return;
-        }
-
+    private void deleteTagFromPhoto(Photo photo) {
         // Check if the photo has any tags
-        if (selectedPhoto.getTags().isEmpty()) {
+        if (photo.getTags().isEmpty()) {
             showAlert("Error", "This photo has no tags to delete.");
             return;
         }
 
-        // Prompt user to select a tag to delete
+        // Prompt the user to select a tag to delete
         List<String> tagOptions = new ArrayList<>();
-        for (Tag tag : selectedPhoto.getTags()) {
+        for (Tag tag : photo.getTags()) {
             tagOptions.add(tag.getName() + ": " + tag.getValue());
         }
 
-        ChoiceDialog<String> tagDialog = new ChoiceDialog<>(tagOptions.get(0), tagOptions);
-        tagDialog.setTitle("Delete Tag");
-        tagDialog.setHeaderText("Select a Tag to Delete");
-        tagDialog.setContentText("Tag:");
-        Optional<String> tagResult = tagDialog.showAndWait();
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(tagOptions.get(0), tagOptions);
+        dialog.setTitle("Delete Tag");
+        dialog.setHeaderText("Select a tag to delete:");
+        dialog.setContentText("Tag:");
 
-        if (!tagResult.isPresent()) {
-            return; // User canceled the dialog
+        Optional<String> result = dialog.showAndWait();
+        if (result.isEmpty()) {
+            return; // User canceled
         }
 
-        String selectedTag = tagResult.get();
+        String selectedTag = result.get();
         Tag tagToDelete = null;
 
         // Find the tag object corresponding to the selected string
-        for (Tag tag : selectedPhoto.getTags()) {
+        for (Tag tag : photo.getTags()) {
             if ((tag.getName() + ": " + tag.getValue()).equals(selectedTag)) {
                 tagToDelete = tag;
                 break;
@@ -287,7 +285,7 @@ public class AlbumController {
         }
 
         if (tagToDelete != null) {
-            selectedPhoto.removeTag(tagToDelete);
+            photo.removeTag(tagToDelete);
             showAlert("Success", "Tag deleted successfully.");
         } else {
             showAlert("Error", "Failed to delete the selected tag.");

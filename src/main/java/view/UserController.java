@@ -5,8 +5,10 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import model.Album;
@@ -18,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Controls the user view of the photo album application.
@@ -75,20 +78,28 @@ public class UserController {
      */
     @FXML
     private void handleCreateAlbum() {
-        String albumName = albumNameField.getText();
-        if (albumName == null || albumName.trim().isEmpty()) {
-            showAlert("Error", "Please enter an album name.");
+        // Prompt the user to enter the album name
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Create Album");
+        dialog.setHeaderText(null);
+        dialog.setContentText("Enter the name of the new album:");
+
+        Optional<String> result = dialog.showAndWait();
+        if (!result.isPresent() || result.get().trim().isEmpty()) {
+            showAlert("Error", "Album name cannot be empty.");
             return;
         }
+
+        String albumName = result.get().trim();
         if (albums.contains(albumName)) {
             showAlert("Error", "Album name already exists.");
             return;
         }
+
         Album album = new Album(albumName);
         user.addAlbum(album);
         albums.add(albumName);
-        albumListView.getItems().add(albumName);
-        albumNameField.clear();
+        albumListView.getItems().add(String.format("%s (0 photos)", albumName));
     }
 
     /**
@@ -96,16 +107,33 @@ public class UserController {
      */
     @FXML
     private void handleDeleteAlbum() {
-        String selectedAlbum = albumListView.getSelectionModel().getSelectedItem();
-        if (selectedAlbum == null) {
+        String selectedDisplayName = albumListView.getSelectionModel().getSelectedItem();
+        if (selectedDisplayName == null) {
             showAlert("Error", "Please select an album to delete.");
             return;
         }
-        Album album = findAlbumByName(selectedAlbum);
-        if (album != null) {
-            user.removeAlbum(album);
-            albums.remove(selectedAlbum);
-            albumListView.getItems().remove(selectedAlbum);
+
+        // Extract the actual album name from the display name
+        String actualAlbumName = selectedDisplayName.split(" \\(")[0];
+
+        // Find the album by name
+        Album albumToDelete = findAlbumByName(actualAlbumName);
+        if (albumToDelete == null) {
+            showAlert("Error", "Album not found.");
+            return;
+        }
+
+        // Confirm deletion
+        Alert confirmationAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmationAlert.setTitle("Delete Album");
+        confirmationAlert.setHeaderText(null);
+        confirmationAlert.setContentText("Are you sure you want to delete the album \"" + actualAlbumName + "\"?");
+        Optional<ButtonType> result = confirmationAlert.showAndWait();
+
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            user.getAlbums().remove(albumToDelete);
+            loadUserAlbums(); // Refresh the album list
+            showAlert("Success", "Album \"" + actualAlbumName + "\" deleted successfully.");
         }
     }
 
@@ -114,27 +142,39 @@ public class UserController {
      */
     @FXML
     private void handleRenameAlbum() {
-        String selectedAlbum = albumListView.getSelectionModel().getSelectedItem();
-        String newAlbumName = albumNameField.getText();
-        if (selectedAlbum == null) {
+        String selectedDisplayName = albumListView.getSelectionModel().getSelectedItem();
+        if (selectedDisplayName == null) {
             showAlert("Error", "Please select an album to rename.");
             return;
         }
-        if (newAlbumName == null || newAlbumName.trim().isEmpty()) {
-            showAlert("Error", "Please enter a new album name.");
+
+        // Extract the actual album name from the display name
+        String actualAlbumName = selectedDisplayName.split(" \\(")[0];
+
+        // Prompt the user to enter the new album name
+        TextInputDialog dialog = new TextInputDialog(actualAlbumName);
+        dialog.setTitle("Rename Album");
+        dialog.setHeaderText(null);
+        dialog.setContentText("Enter the new name for the album:");
+
+        Optional<String> result = dialog.showAndWait();
+        if (!result.isPresent() || result.get().trim().isEmpty()) {
+            showAlert("Error", "Album name cannot be empty.");
             return;
         }
+
+        String newAlbumName = result.get().trim();
         if (albums.contains(newAlbumName)) {
             showAlert("Error", "Album name already exists.");
             return;
         }
-        Album album = findAlbumByName(selectedAlbum);
+
+        Album album = findAlbumByName(actualAlbumName);
         if (album != null) {
             album.setName(newAlbumName);
-            albums.remove(selectedAlbum);
+            albums.remove(actualAlbumName);
             albums.add(newAlbumName);
-            albumListView.getItems().set(albumListView.getSelectionModel().getSelectedIndex(), newAlbumName);
-            albumNameField.clear();
+            loadUserAlbums(); // Refresh the album list
         }
     }
 
