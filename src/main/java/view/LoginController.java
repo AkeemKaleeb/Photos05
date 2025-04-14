@@ -57,6 +57,24 @@ public class LoginController {
 
     
     /**
+     * Returns the currently logged-in user.
+     *
+     * @return the logged-in user
+     */
+    public User getCurrentUser() {
+        return currUser;
+    }
+
+    /**
+     * Returns the currently logged-in user.
+     *
+     * @return the logged-in user
+     */
+    public void setCurrentUser(User currUser) {
+        this.currUser = currUser;
+    }
+
+    /**
      * Handles the login button action.
      * If the username is "admin", the admin view is loaded.
      * Otherwise, the user is authenticated and the user view is loaded.
