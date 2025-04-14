@@ -180,7 +180,6 @@ public class AlbumController {
       */
      @FXML
      private void handleShowDate() {
-         // TODO: Show the Date in application
          Photo selectedPhoto = photoListView.getSelectionModel().getSelectedItem();
          if (selectedPhoto == null) {
              showAlert("Error", "Please select a photo to view the date.");
@@ -464,31 +463,37 @@ public class AlbumController {
      * Handles the "Single Tag" option for HandleSearchPhotos.
      */
     private void searchBySingleTag() {
-        // Prompt user for tag type
-        TextInputDialog tagTypeDialog = new TextInputDialog();
+        // Predefined tag types
+        List<String> predefinedTagTypes = Arrays.asList("location", "person", "activity");
+
+        // Prompt user to select a tag type
+        ChoiceDialog<String> tagTypeDialog = new ChoiceDialog<>("location", predefinedTagTypes);
         tagTypeDialog.setTitle("Search by Single Tag");
-        tagTypeDialog.setHeaderText("Enter Tag Type:");
+        tagTypeDialog.setHeaderText("Select Tag Type:");
+        tagTypeDialog.setContentText("Tag Type:");
         Optional<String> tagTypeResult = tagTypeDialog.showAndWait();
-    
-        if (!tagTypeResult.isPresent() || tagTypeResult.get().trim().isEmpty()) {
-            showAlert("Error", "Tag type cannot be empty.");
+
+        if (!tagTypeResult.isPresent()) {
+            showAlert("Error", "Tag type selection canceled.");
             return;
         }
-    
+
+        String tagType = tagTypeResult.get();
+
         // Prompt user for tag value
         TextInputDialog tagValueDialog = new TextInputDialog();
         tagValueDialog.setTitle("Search by Single Tag");
         tagValueDialog.setHeaderText("Enter Tag Value:");
+        tagValueDialog.setContentText("Tag Value:");
         Optional<String> tagValueResult = tagValueDialog.showAndWait();
-    
+
         if (!tagValueResult.isPresent() || tagValueResult.get().trim().isEmpty()) {
             showAlert("Error", "Tag value cannot be empty.");
             return;
         }
-    
-        String tagType = tagTypeResult.get().trim();
+
         String tagValue = tagValueResult.get().trim();
-    
+
         // Filter photos by single tag
         List<Photo> matchingPhotos = new ArrayList<>();
         for (Photo photo : album.getPhotos()) {
@@ -499,7 +504,7 @@ public class AlbumController {
                 }
             }
         }
-    
+
         displaySearchResults(matchingPhotos, "No photos found with the specified tag.");
     }
 
@@ -510,11 +515,11 @@ public class AlbumController {
         // Prompt user for first tag type and value
         String[] firstTag = promptForTag("First Tag");
         if (firstTag == null) return;
-    
+
         // Prompt user for second tag type and value
         String[] secondTag = promptForTag("Second Tag");
         if (secondTag == null) return;
-    
+
         // Filter photos by conjunctive tags
         List<Photo> matchingPhotos = new ArrayList<>();
         for (Photo photo : album.getPhotos()) {
@@ -531,7 +536,7 @@ public class AlbumController {
                 matchingPhotos.add(photo);
             }
         }
-    
+
         displaySearchResults(matchingPhotos, "No photos found with the specified tags (AND).");
     }
 
@@ -542,11 +547,11 @@ public class AlbumController {
         // Prompt user for first tag type and value
         String[] firstTag = promptForTag("First Tag");
         if (firstTag == null) return;
-    
+
         // Prompt user for second tag type and value
         String[] secondTag = promptForTag("Second Tag");
         if (secondTag == null) return;
-    
+
         // Filter photos by disjunctive tags
         List<Photo> matchingPhotos = new ArrayList<>();
         for (Photo photo : album.getPhotos()) {
@@ -563,7 +568,7 @@ public class AlbumController {
                 matchingPhotos.add(photo);
             }
         }
-    
+
         displaySearchResults(matchingPhotos, "No photos found with the specified tags (OR).");
     }
 
@@ -574,27 +579,36 @@ public class AlbumController {
      * @return an array containing the tag type and value, or null if the user cancels
      */
     private String[] promptForTag(String tagPrompt) {
-        TextInputDialog tagTypeDialog = new TextInputDialog();
+        // Predefined tag types
+        List<String> predefinedTagTypes = Arrays.asList("location", "person", "activity");
+
+        // Prompt user to select a tag type
+        ChoiceDialog<String> tagTypeDialog = new ChoiceDialog<>("location", predefinedTagTypes);
         tagTypeDialog.setTitle("Search by Tag");
-        tagTypeDialog.setHeaderText("Enter " + tagPrompt + " Type:");
+        tagTypeDialog.setHeaderText("Select " + tagPrompt + " Type:");
+        tagTypeDialog.setContentText("Tag Type:");
         Optional<String> tagTypeResult = tagTypeDialog.showAndWait();
-    
-        if (!tagTypeResult.isPresent() || tagTypeResult.get().trim().isEmpty()) {
-            showAlert("Error", tagPrompt + " type cannot be empty.");
+
+        if (!tagTypeResult.isPresent()) {
+            showAlert("Error", tagPrompt + " type selection canceled.");
             return null;
         }
-    
+
+        String tagType = tagTypeResult.get();
+
+        // Prompt user for tag value
         TextInputDialog tagValueDialog = new TextInputDialog();
         tagValueDialog.setTitle("Search by Tag");
         tagValueDialog.setHeaderText("Enter " + tagPrompt + " Value:");
+        tagValueDialog.setContentText("Tag Value:");
         Optional<String> tagValueResult = tagValueDialog.showAndWait();
-    
+
         if (!tagValueResult.isPresent() || tagValueResult.get().trim().isEmpty()) {
             showAlert("Error", tagPrompt + " value cannot be empty.");
             return null;
         }
-    
-        return new String[]{tagTypeResult.get().trim(), tagValueResult.get().trim()};
+
+        return new String[]{tagType, tagValueResult.get().trim()};
     }
 
     /**
