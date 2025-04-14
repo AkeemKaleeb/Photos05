@@ -26,6 +26,7 @@ public class LoginController {
     private TextField usernameField;
 
     private Stage stage;
+    private User currUser;
     private static final String USER_DATA_DIR = System.getProperty("user.home") + File.separator + "PhotoAlbumUsers";
     private Map<String, User> users;
     
@@ -54,6 +55,7 @@ public class LoginController {
         this.stage = stage;
     }
 
+    
     /**
      * Handles the login button action.
      * If the username is "admin", the admin view is loaded.
@@ -105,6 +107,7 @@ public class LoginController {
                 stage.setTitle("Photo Album Stock User");
                 stage.setScene(scene);
                 stage.show();
+                setCurrentUser(stockUser);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -132,6 +135,7 @@ public class LoginController {
                 stage.setTitle("Photo Album User");
                 stage.setScene(scene);
                 stage.show();
+                setCurrentUser(user);
             } catch (Exception e) {
                 e.printStackTrace();
             }
