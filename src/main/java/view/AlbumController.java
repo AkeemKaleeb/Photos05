@@ -21,6 +21,7 @@ import model.Tag;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -175,20 +176,6 @@ public class AlbumController {
     }
 
     /**
-     * Handles showing the date of the photo
-     */
-    @FXML
-    private void handleShowDate() {
-        // TODO: Show the Date in application
-        Photo selectedPhoto = photoListView.getSelectionModel().getSelectedItem();
-        if (selectedPhoto == null) {
-            showAlert("Error", "Please select a photo to view the date.");
-            return;
-        }
-        showAlert("Photo Date", "Date: " + selectedPhoto.getLastModifiedDate());
-    }
-
-    /**
      * Handles the "Tag Photo" button action.
      */
     @FXML
@@ -296,10 +283,86 @@ public class AlbumController {
 
     /**
      * Handles the "Move Photo" button action.
+     * Prompts the user to decide wether to move the photo or copy it.
      */
     @FXML
     private void handleMovePhoto() {
-        // TODO: Implement move photo functionality
+        Photo selectedPhoto = photoListView.getSelectionModel().getSelectedItem();
+        if (selectedPhoto == null) {
+            showAlert("Error", "Please select a photo to move.");
+            return;
+        }
+    
+        // Prompt user to select the destination album
+        List<String> albumNames = new ArrayList<>();
+        for (Album album : user.getAlbums()) {
+            if (!album.equals(this.album)) { // Exclude the current album
+                albumNames.add(album.getName());
+            }
+        }
+    
+        if (albumNames.isEmpty()) {
+            showAlert("Error", "No other albums available to move the photo.");
+            return;
+        }
+    
+        ChoiceDialog<String> albumDialog = new ChoiceDialog<>(albumNames.get(0), albumNames);
+        albumDialog.setTitle("Move Photo");
+        albumDialog.setHeaderText("Select Destination Album");
+        albumDialog.setContentText("Album:");
+        Optional<String> albumResult = albumDialog.showAndWait();
+    
+        if (!albumResult.isPresent()) {
+            return; // User canceled the dialog
+        }
+    
+        String destinationAlbumName = albumResult.get();
+        Album destinationAlbum = null;
+    
+        // Find the destination album
+        for (Album album : user.getAlbums()) {
+            if (album.getName().equals(destinationAlbumName)) {
+                destinationAlbum = album;
+                break;
+            }
+        }
+    
+        if (destinationAlbum == null) {
+            showAlert("Error", "Failed to find the selected album.");
+            return;
+        }
+    
+        // Check if the photo already exists in the destination album
+        if (destinationAlbum.getPhotos().contains(selectedPhoto)) {
+            showAlert("Error", "The photo already exists in the selected album.");
+            return;
+        }
+    
+        // Prompt user to decide whether to delete the original photo
+        Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmationDialog.setTitle("Move Photo");
+        confirmationDialog.setHeaderText("Do you want to delete the original photo?");
+        confirmationDialog.setContentText("Check the box below if you want to delete the original photo after moving it.");
+    
+        javafx.scene.control.CheckBox deleteOriginalCheckBox = new javafx.scene.control.CheckBox("Delete original photo");
+        confirmationDialog.getDialogPane().setContent(deleteOriginalCheckBox);
+    
+        Optional<javafx.scene.control.ButtonType> confirmationResult = confirmationDialog.showAndWait();
+    
+        if (confirmationResult.isEmpty() || confirmationResult.get() != javafx.scene.control.ButtonType.OK) {
+            return; // User canceled the dialog
+        }
+    
+        // Move or copy the photo
+        destinationAlbum.addPhoto(selectedPhoto);
+    
+        if (deleteOriginalCheckBox.isSelected()) {
+            album.removePhoto(selectedPhoto);
+            photoListView.getItems().remove(selectedPhoto);
+            showAlert("Success", "Photo moved successfully to album: " + destinationAlbumName + " and the original was deleted.");
+        } else {
+            showAlert("Success", "Photo copied successfully to album: " + destinationAlbumName + ". The original remains in the current album.");
+        }
     }
 
     /**
@@ -307,7 +370,232 @@ public class AlbumController {
      */
     @FXML
     private void handleSearchPhotos() {
-        // TODO: Implement search photos functionality
+        // Prompt user to choose a search type
+        List<String> searchOptions = Arrays.asList("Date Range", "Single Tag", "Conjunctive Tags (AND)", "Disjunctive Tags (OR)");
+        ChoiceDialog<String> searchDialog = new ChoiceDialog<>("Date Range", searchOptions);
+        searchDialog.setTitle("Search Photos");
+        searchDialog.setHeaderText("Select Search Type");
+        searchDialog.setContentText("Search Type:");
+        Optional<String> searchTypeResult = searchDialog.showAndWait();
+    
+        if (!searchTypeResult.isPresent()) {
+            return; // User canceled the dialog
+        }
+    
+        String searchType = searchTypeResult.get();
+    
+        switch (searchType) {
+            case "Date Range":
+                searchByDateRange();
+                break;
+            case "Single Tag":
+                searchBySingleTag();
+                break;
+            case "Conjunctive Tags (AND)":
+                searchByConjunctiveTags();
+                break;
+            case "Disjunctive Tags (OR)":
+                searchByDisjunctiveTags();
+                break;
+            default:
+                showAlert("Error", "Invalid search type selected.");
+        }
+    }
+
+    /**
+     * Handles the "Date Range" option for HandleSearchPhotos.
+     */
+    private void searchByDateRange() {
+        // Prompt user for start date
+        TextInputDialog startDateDialog = new TextInputDialog();
+        startDateDialog.setTitle("Search by Date Range");
+        startDateDialog.setHeaderText("Enter Start Date (YYYY-MM-DD):");
+        Optional<String> startDateResult = startDateDialog.showAndWait();
+
+        if (!startDateResult.isPresent() || startDateResult.get().trim().isEmpty()) {
+            showAlert("Error", "Start date cannot be empty.");
+            return;
+        }
+
+        // Prompt user for end date
+        TextInputDialog endDateDialog = new TextInputDialog();
+        endDateDialog.setTitle("Search by Date Range");
+        endDateDialog.setHeaderText("Enter End Date (YYYY-MM-DD):");
+        Optional<String> endDateResult = endDateDialog.showAndWait();
+
+        if (!endDateResult.isPresent() || endDateResult.get().trim().isEmpty()) {
+            showAlert("Error", "End date cannot be empty.");
+            return;
+        }
+
+        try {
+            LocalDateTime startDate = LocalDateTime.parse(startDateResult.get().trim() + "T00:00:00");
+            LocalDateTime endDate = LocalDateTime.parse(endDateResult.get().trim() + "T23:59:59");
+
+            // Filter photos by date range
+            List<Photo> matchingPhotos = new ArrayList<>();
+            for (Photo photo : album.getPhotos()) {
+                if (!photo.getLastModifiedDate().isBefore(startDate) && !photo.getLastModifiedDate().isAfter(endDate)) {
+                    matchingPhotos.add(photo);
+                }
+            }
+
+            displaySearchResults(matchingPhotos, "No photos found in the specified date range.");
+        } catch (Exception e) {
+            showAlert("Error", "Invalid date format. Please use YYYY-MM-DD.");
+        }
+    }
+
+    /**
+     * Handles the "Single Tag" option for HandleSearchPhotos.
+     */
+    private void searchBySingleTag() {
+        // Prompt user for tag type
+        TextInputDialog tagTypeDialog = new TextInputDialog();
+        tagTypeDialog.setTitle("Search by Single Tag");
+        tagTypeDialog.setHeaderText("Enter Tag Type:");
+        Optional<String> tagTypeResult = tagTypeDialog.showAndWait();
+    
+        if (!tagTypeResult.isPresent() || tagTypeResult.get().trim().isEmpty()) {
+            showAlert("Error", "Tag type cannot be empty.");
+            return;
+        }
+    
+        // Prompt user for tag value
+        TextInputDialog tagValueDialog = new TextInputDialog();
+        tagValueDialog.setTitle("Search by Single Tag");
+        tagValueDialog.setHeaderText("Enter Tag Value:");
+        Optional<String> tagValueResult = tagValueDialog.showAndWait();
+    
+        if (!tagValueResult.isPresent() || tagValueResult.get().trim().isEmpty()) {
+            showAlert("Error", "Tag value cannot be empty.");
+            return;
+        }
+    
+        String tagType = tagTypeResult.get().trim();
+        String tagValue = tagValueResult.get().trim();
+    
+        // Filter photos by single tag
+        List<Photo> matchingPhotos = new ArrayList<>();
+        for (Photo photo : album.getPhotos()) {
+            for (Tag tag : photo.getTags()) {
+                if (tag.getName().equals(tagType) && tag.getValue().equals(tagValue)) {
+                    matchingPhotos.add(photo);
+                    break;
+                }
+            }
+        }
+    
+        displaySearchResults(matchingPhotos, "No photos found with the specified tag.");
+    }
+
+    /**
+     * Handles the "Tag AND Tag" option for HandleSearchPhotos.
+     */
+    private void searchByConjunctiveTags() {
+        // Prompt user for first tag type and value
+        String[] firstTag = promptForTag("First Tag");
+        if (firstTag == null) return;
+    
+        // Prompt user for second tag type and value
+        String[] secondTag = promptForTag("Second Tag");
+        if (secondTag == null) return;
+    
+        // Filter photos by conjunctive tags
+        List<Photo> matchingPhotos = new ArrayList<>();
+        for (Photo photo : album.getPhotos()) {
+            boolean hasFirstTag = false, hasSecondTag = false;
+            for (Tag tag : photo.getTags()) {
+                if (tag.getName().equals(firstTag[0]) && tag.getValue().equals(firstTag[1])) {
+                    hasFirstTag = true;
+                }
+                if (tag.getName().equals(secondTag[0]) && tag.getValue().equals(secondTag[1])) {
+                    hasSecondTag = true;
+                }
+            }
+            if (hasFirstTag && hasSecondTag) {
+                matchingPhotos.add(photo);
+            }
+        }
+    
+        displaySearchResults(matchingPhotos, "No photos found with the specified tags (AND).");
+    }
+
+    /**
+     * Handles the "Tag OR Tag" option for HandleSearchPhotos.
+     */
+    private void searchByDisjunctiveTags() {
+        // Prompt user for first tag type and value
+        String[] firstTag = promptForTag("First Tag");
+        if (firstTag == null) return;
+    
+        // Prompt user for second tag type and value
+        String[] secondTag = promptForTag("Second Tag");
+        if (secondTag == null) return;
+    
+        // Filter photos by disjunctive tags
+        List<Photo> matchingPhotos = new ArrayList<>();
+        for (Photo photo : album.getPhotos()) {
+            boolean hasFirstTag = false, hasSecondTag = false;
+            for (Tag tag : photo.getTags()) {
+                if (tag.getName().equals(firstTag[0]) && tag.getValue().equals(firstTag[1])) {
+                    hasFirstTag = true;
+                }
+                if (tag.getName().equals(secondTag[0]) && tag.getValue().equals(secondTag[1])) {
+                    hasSecondTag = true;
+                }
+            }
+            if (hasFirstTag || hasSecondTag) {
+                matchingPhotos.add(photo);
+            }
+        }
+    
+        displaySearchResults(matchingPhotos, "No photos found with the specified tags (OR).");
+    }
+
+    /**
+     * Prompts the user to enter a tag type and value. Used for single tag, conjunctive tag, and disjunctive tag searches.
+     * 
+     * @param tagPrompt the prompt message for the tag type
+     * @return an array containing the tag type and value, or null if the user cancels
+     */
+    private String[] promptForTag(String tagPrompt) {
+        TextInputDialog tagTypeDialog = new TextInputDialog();
+        tagTypeDialog.setTitle("Search by Tag");
+        tagTypeDialog.setHeaderText("Enter " + tagPrompt + " Type:");
+        Optional<String> tagTypeResult = tagTypeDialog.showAndWait();
+    
+        if (!tagTypeResult.isPresent() || tagTypeResult.get().trim().isEmpty()) {
+            showAlert("Error", tagPrompt + " type cannot be empty.");
+            return null;
+        }
+    
+        TextInputDialog tagValueDialog = new TextInputDialog();
+        tagValueDialog.setTitle("Search by Tag");
+        tagValueDialog.setHeaderText("Enter " + tagPrompt + " Value:");
+        Optional<String> tagValueResult = tagValueDialog.showAndWait();
+    
+        if (!tagValueResult.isPresent() || tagValueResult.get().trim().isEmpty()) {
+            showAlert("Error", tagPrompt + " value cannot be empty.");
+            return null;
+        }
+    
+        return new String[]{tagTypeResult.get().trim(), tagValueResult.get().trim()};
+    }
+
+    /**
+     * Displays the results of a search.
+     * 
+     * @param matchingPhotos the list of matching photos
+     * @param noResultsMessage the message to display if no results are found
+     */
+    private void displaySearchResults(List<Photo> matchingPhotos, String noResultsMessage) {
+        if (matchingPhotos.isEmpty()) {
+            showAlert("No Results", noResultsMessage);
+        } else {
+            photoListView.setItems(FXCollections.observableArrayList(matchingPhotos));
+            showAlert("Search Complete", "Found " + matchingPhotos.size() + " photo(s).");
+        }
     }
 
     /**
@@ -349,5 +637,20 @@ public class AlbumController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    /**
+     * Finds a photo in the album by its file path.
+     *
+     * @param photoPath the file path of the photo to find
+     * @return the photo with the specified file path, or null if not found
+     */
+    private Photo findPhotoByPath(String photoPath) {
+        for (Photo photo : album.getPhotos()) {
+            if (photo.getFilePath().equals(photoPath)) {
+                return photo;
+            }
+        }
+        return null;
     }
 }
