@@ -27,5 +27,8 @@
         <Button text="Move Photo" onAction="#handleMovePhoto"/>
         <Button text="Search Photos" onAction="#handleSearchPhotos"/>
     </HBox>
-    <Button text="Back to Albums" onAction="#handleBackToAlbums"/>
+    <HBox spacing="10">
+        <Button text="Open Photo" onAction="#handleOpenPhoto"/>
+        <Button text="Back to Albums" onAction="#handleBackToAlbums"/>
+    </HBox>
 </VBox>

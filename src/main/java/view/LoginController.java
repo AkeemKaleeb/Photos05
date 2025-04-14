@@ -61,8 +61,8 @@ public class LoginController {
     private void handleLogin() {
         String username = usernameField.getText();
 
-        if (username == null || username.trim().isEmpty()) {
-            showAlert("Error", "Please enter a username.");
+        if (username == null || username.trim().isEmpty() || !users.containsKey(username)) {
+            showAlert("Error", "User Does Not Exist");
             return;
         }
 

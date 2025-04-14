@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.171" fx:controller="view.PhotoController">
+    <!-- Left: Image Display -->
+    <left>
+        <ImageView fx:id="photoImageView" fitWidth="400" fitHeight="400" preserveRatio="true" />
+    </left>
+
+    <!-- Right: Information Box -->
+    <right>
+        <VBox spacing="10">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10" />
+            </padding>
+            <Label text="Photo Information" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
+            <HBox spacing="5">
+                <Label text="Title:" />
+                <TextField fx:id="titleField" editable="false" />
+            </HBox>
+            <HBox spacing="5">
+                <Label text="Date:" />
+                <TextField fx:id="dateField" editable="false" />
+            </HBox>
+            <HBox spacing="5">
+                <Label text="Caption:" />
+                <TextField fx:id="captionField" editable="false" />
+            </HBox>
+            <Label text="Tags:" />
+            <ListView fx:id="tagsListView" prefHeight="100" />
+            <HBox spacing="10" alignment="center">
+                <Button fx:id="previousButton" text="Previous" onAction="#handlePreviousPhoto" />
+                <Button fx:id="nextButton" text="Next" onAction="#handleNextPhoto" />
+            </HBox>
+            <Button text="Back to Album" onAction="#handleBackToAlbum" />
+        </VBox>
+    </right>
+</BorderPane>

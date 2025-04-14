@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -378,6 +377,32 @@ public class AlbumController {
         }
     }
 
+    @FXML
+    private void handleOpenPhoto() {
+        Photo selectedPhoto = photoListView.getSelectionModel().getSelectedItem();
+        if (selectedPhoto == null) {
+            showAlert("Error", "Please select a photo to view.");
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/PhotoView.fxml"));
+            Parent root = loader.load();
+
+            PhotoController controller = loader.getController();
+            controller.setStage(stage);
+            controller.setAlbum(album, album.getPhotos().indexOf(selectedPhoto));
+
+            Scene scene = new Scene(root, 800, 600);
+            stage.setTitle("Photo Viewer");
+            stage.setScene(scene);
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Error", "Failed to load the photo view.");
+        }
+    }
+
     /**
      * Handles the "Search Photos" button action.
      */
@@ -673,6 +698,7 @@ public class AlbumController {
      * @param photoPath the file path of the photo to find
      * @return the photo with the specified file path, or null if not found
      */
+    @FXML
     private Photo findPhotoByPath(String photoPath) {
         for (Photo photo : album.getPhotos()) {
             if (photo.getFilePath().equals(photoPath)) {
