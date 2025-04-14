@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import model.Album;
 import model.DataManager;
@@ -262,5 +263,44 @@ public class UserController {
             }
         }
         return null;
+    }
+
+    @FXML
+    private void handleAlbumDoubleClick(MouseEvent event) {
+        // Check if the user double-clicked
+        if (event.getClickCount() == 2) {
+            String selectedDisplayName = albumListView.getSelectionModel().getSelectedItem();
+            if (selectedDisplayName == null) {
+                return;
+            }
+
+            // Extract the actual album name from the display name
+            String actualAlbumName = selectedDisplayName.split(" \\(")[0];
+
+            // Find the album by name
+            Album selectedAlbum = findAlbumByName(actualAlbumName);
+            if (selectedAlbum == null) {
+                showAlert("Error", "Album not found.");
+                return;
+            }
+
+            // Open the album view
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/AlbumView.fxml"));
+                Parent root = loader.load();
+
+                AlbumController controller = loader.getController();
+                controller.setStage(stage);
+                controller.setAlbum(selectedAlbum);
+
+                Scene scene = new Scene(root, 800, 600);
+                stage.setTitle("Album: " + selectedAlbum.getName());
+                stage.setScene(scene);
+                stage.show();
+            } catch (Exception e) {
+                e.printStackTrace();
+                showAlert("Error", "Failed to load the album view.");
+            }
+        }
     }
 }

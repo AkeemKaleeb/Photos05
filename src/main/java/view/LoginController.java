@@ -27,7 +27,6 @@ public class LoginController {
 
     private Stage stage;
     private static final String USER_DATA_DIR = System.getProperty("user.home") + File.separator + "PhotoAlbumUsers";
-    @SuppressWarnings("unused")
     private Map<String, User> users;
     
     /**
@@ -37,6 +36,9 @@ public class LoginController {
     public void initialize() {
         try {
             users = DataManager.loadAllUsers(USER_DATA_DIR);
+            // Add admin and stock users to the users list
+            users.putIfAbsent("admin", new User("admin"));
+            users.putIfAbsent("stock", new User("stock"));
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
             showAlert("Error", "Failed to load user data.");

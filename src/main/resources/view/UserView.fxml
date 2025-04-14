@@ -17,7 +17,7 @@
         <Button text="Delete Album" onAction="#handleDeleteAlbum"/>
         <Button text="Rename Album" onAction="#handleRenameAlbum"/>
     </HBox>
-    <ListView fx:id="albumListView"/>
+    <ListView fx:id="albumListView" onMouseClicked="#handleAlbumDoubleClick"/>
     <HBox spacing="10">
         <Button text="Open Album" onAction="#handleOpenAlbum"/>
         <Button text="Logout" onAction="#handleLogout"/>

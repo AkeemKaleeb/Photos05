@@ -4,9 +4,11 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
@@ -16,6 +18,7 @@ import model.Tag;
 
 import java.io.File;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Controls the photo view of the photo album application.
@@ -37,6 +40,9 @@ public class PhotoController {
 
     @FXML
     private TextField captionField;
+
+    @FXML
+    private TextField tagField;
 
     @FXML
     private ListView<String> tagsListView;
@@ -107,6 +113,83 @@ public class PhotoController {
         nextButton.setDisable(currentIndex == photos.size() - 1);
     }
 
+    @FXML
+    private void handleMovePhoto() {
+        Photo currentPhoto = photos.get(currentIndex);
+
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Move Photo");
+        dialog.setHeaderText("Enter the name of the destination album:");
+        dialog.setContentText("Album Name:");
+
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            String destinationAlbumName = result.get().trim();
+            Album destinationAlbum = album.getUser().getAlbums().stream()
+                    .filter(a -> a.getName().equals(destinationAlbumName))
+                    .findFirst()
+                    .orElse(null);
+
+            if (destinationAlbum == null) {
+                showAlert("Error", "Album not found.");
+                return;
+            }
+
+            if (destinationAlbum.getPhotos().contains(currentPhoto)) {
+                showAlert("Error", "Photo already exists in the destination album.");
+                return;
+            }
+
+            destinationAlbum.addPhoto(currentPhoto);
+            album.removePhoto(currentPhoto);
+            photos.remove(currentPhoto);
+            if (currentIndex >= photos.size()) {
+                currentIndex = photos.size() - 1;
+            }
+            updatePhotoView();
+            showAlert("Success", "Photo moved successfully.");
+        }
+    }
+
+    @FXML
+    private void handleAddTag() {
+        Photo currentPhoto = photos.get(currentIndex);
+        String tagInput = tagField.getText().trim();
+        if (tagInput.isEmpty()) {
+            showAlert("Error", "Tag cannot be empty.");
+            return;
+        }
+
+        String[] tagParts = tagInput.split(":");
+        if (tagParts.length != 2) {
+            showAlert("Error", "Tag must be in the format 'name:value'.");
+            return;
+        }
+
+        Tag newTag = new Tag(tagParts[0].trim(), tagParts[1].trim());
+        if (currentPhoto.getTags().contains(newTag)) {
+            showAlert("Error", "This tag already exists.");
+            return;
+        }
+
+        currentPhoto.addTag(newTag);
+        tagsListView.getItems().add(newTag.getName() + ": " + newTag.getValue());
+        tagField.clear();
+        showAlert("Success", "Tag added successfully.");
+    }
+
+    @FXML
+    private void handleUpdateCaption() {
+        Photo currentPhoto = photos.get(currentIndex);
+        String newCaption = captionField.getText().trim();
+        if (newCaption.isEmpty()) {
+            showAlert("Error", "Caption cannot be empty.");
+            return;
+        }
+        currentPhoto.setCaption(newCaption);
+        showAlert("Success", "Caption updated successfully.");
+    }
+
     /**
      * Handles the "Previous" button action.
      */
@@ -130,17 +213,17 @@ public class PhotoController {
     }
 
     /**
-         * Displays an alert with the given message.
-         *
-         * @param message the message to display in the alert
-         */
-        private void showAlert(String message) {
-            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText(null);
-            alert.setContentText(message);
-            alert.showAndWait();
-        }
+     * Displays an alert with the given message.
+     *
+     * @param message the message to display in the alert
+     */
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
 
     @FXML
     private void handleBackToAlbum() {
@@ -160,7 +243,7 @@ public class PhotoController {
             stage.show();
         } catch (Exception e) {
             e.printStackTrace();
-            showAlert("Error: Failed to return to the album view.");
+            showAlert("Error", "Failed to return to the album view.");
         }
     }
 }

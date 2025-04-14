@@ -10,6 +10,7 @@ import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.image.Image;
@@ -706,5 +707,33 @@ public class AlbumController {
             }
         }
         return null;
+    }
+
+    @FXML
+    private void handlePhotoDoubleClick(MouseEvent event) {
+        // Check if the user double-clicked
+        if (event.getClickCount() == 2) {
+            Photo selectedPhoto = photoListView.getSelectionModel().getSelectedItem();
+            if (selectedPhoto == null) {
+                return;
+            }
+
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/PhotoView.fxml"));
+                Parent root = loader.load();
+
+                PhotoController controller = loader.getController();
+                controller.setStage(stage);
+                controller.setAlbum(album, album.getPhotos().indexOf(selectedPhoto));
+
+                Scene scene = new Scene(root, 800, 600);
+                stage.setTitle("Photo Viewer");
+                stage.setScene(scene);
+                stage.show();
+            } catch (Exception e) {
+                e.printStackTrace();
+                showAlert("Error", "Failed to load the photo view.");
+            }
+        }
     }
 }

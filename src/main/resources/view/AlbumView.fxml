@@ -17,7 +17,7 @@
         <Button text="Add Photo" onAction="#handleAddPhoto"/>
         <Button text="Remove Photo" onAction="#handleRemovePhoto"/>
     </HBox>
-    <ListView fx:id="photoListView" prefHeight="400"/>
+    <ListView fx:id="photoListView" prefHeight="400" onMouseClicked="#handlePhotoDoubleClick"/>
     <HBox spacing="10">
         <Button text="Caption Photo" onAction="#handleCaptionPhoto"/>
         <Button text="Tag Photo" onAction="#handleTagPhoto"/>
@@ -28,7 +28,6 @@
         <Button text="Search Photos" onAction="#handleSearchPhotos"/>
     </HBox>
     <HBox spacing="10">
-        <Button text="Open Photo" onAction="#handleOpenPhoto"/>
         <Button text="Back to Albums" onAction="#handleBackToAlbums"/>
     </HBox>
 </VBox>

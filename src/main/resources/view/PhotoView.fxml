@@ -33,15 +33,23 @@
             </HBox>
             <HBox spacing="5">
                 <Label text="Caption:" />
-                <TextField fx:id="captionField" editable="false" />
+                <TextField fx:id="captionField" />
+                <Button text="Update" onAction="#handleUpdateCaption" />
             </HBox>
             <Label text="Tags:" />
             <ListView fx:id="tagsListView" prefHeight="100" />
+            <HBox spacing="5">
+                <TextField fx:id="tagField" promptText="Add Tag" />
+                <Button text="Add" onAction="#handleAddTag" />
+            </HBox>
             <HBox spacing="10" alignment="center">
                 <Button fx:id="previousButton" text="Previous" onAction="#handlePreviousPhoto" />
                 <Button fx:id="nextButton" text="Next" onAction="#handleNextPhoto" />
             </HBox>
-            <Button text="Back to Album" onAction="#handleBackToAlbum" />
+            <HBox spacing="10">
+                <Button text="Move Photo" onAction="#handleMovePhoto" />
+                <Button text="Back to Album" onAction="#handleBackToAlbum" />
+            </HBox>
         </VBox>
     </right>
 </BorderPane>
