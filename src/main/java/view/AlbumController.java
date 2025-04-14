@@ -647,7 +647,56 @@ public class AlbumController {
         } else {
             photoListView.setItems(FXCollections.observableArrayList(matchingPhotos));
             showAlert("Search Complete", "Found " + matchingPhotos.size() + " photo(s).");
+    
+            // Prompt user to create a new album with the search results
+            Alert createAlbumDialog = new Alert(Alert.AlertType.CONFIRMATION);
+            createAlbumDialog.setTitle("Create New Album");
+            createAlbumDialog.setHeaderText("Would you like to create a new album with the search results?");
+            createAlbumDialog.setContentText("Click OK to create a new album, or Cancel to skip.");
+    
+            Optional<javafx.scene.control.ButtonType> result = createAlbumDialog.showAndWait();
+            if (result.isPresent() && result.get() == javafx.scene.control.ButtonType.OK) {
+                createNewAlbumFromSearchResults(matchingPhotos);
+            }
         }
+    }
+
+    /**
+     * Displays the results of a search.
+     * 
+     * @param matchingPhotos the list of matching photos
+     */
+    private void createNewAlbumFromSearchResults(List<Photo> matchingPhotos) {
+        // Prompt user for the new album name
+        TextInputDialog albumNameDialog = new TextInputDialog();
+        albumNameDialog.setTitle("New Album");
+        albumNameDialog.setHeaderText("Enter a name for the new album:");
+        albumNameDialog.setContentText("Album Name:");
+        Optional<String> albumNameResult = albumNameDialog.showAndWait();
+    
+        if (!albumNameResult.isPresent() || albumNameResult.get().trim().isEmpty()) {
+            showAlert("Error", "Album name cannot be empty.");
+            return;
+        }
+    
+        String albumName = albumNameResult.get().trim();
+    
+        // Check if an album with the same name already exists
+        for (Album existingAlbum : user.getAlbums()) {
+            if (existingAlbum.getName().equalsIgnoreCase(albumName)) {
+                showAlert("Error", "An album with this name already exists.");
+                return;
+            }
+        }
+    
+        // Create the new album and add the search results
+        Album newAlbum = new Album(albumName);
+        for (Photo photo : matchingPhotos) {
+            newAlbum.addPhoto(photo);
+        }
+        user.addAlbum(newAlbum);
+    
+        showAlert("Success", "New album '" + albumName + "' created with " + matchingPhotos.size() + " photo(s).");
     }
 
     /**

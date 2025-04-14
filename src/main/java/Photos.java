@@ -6,12 +6,14 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.chart.PieChart.Data;
 import javafx.stage.Stage;
 import model.Album;
 import model.DataManager;
 import model.Photo;
 import model.User;
 import view.LoginController;
+import view.UserController;
 
 /**
  * Represents the main application class for the photo album application.
@@ -51,7 +53,48 @@ public class Photos extends Application {
         Scene scene = new Scene(root, 300, 200);
         primaryStage.setTitle("Photo Album Login");
         primaryStage.setScene(scene);
+
+        // Handle application close event
+        primaryStage.setOnCloseRequest(event -> {            
+            saveAllData(controller.getCurrentUser());
+        });
+
         primaryStage.show();
+    }
+
+    /**
+     * Saves all user data, including the stock user and any logged-in users.
+     */
+    private void saveAllData(User currentUser) {
+        try {
+            if (currentUser != null) {
+                if(!currentUser.getUsername().equals("stock")) {
+                    
+                        String filePath = System.getProperty("user.home") + File.separator + "PhotoAlbumUsers" + File.separator + currentUser.getUsername() + ".dat";
+                        DataManager.saveUser(currentUser, filePath);
+                        System.out.println("Saved data for user: " + currentUser.getUsername());                    
+                } else {
+                    saveStockUserData(currentUser);
+                }
+            } else {
+                System.err.println("No current user to save.");
+            }
+        
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Failed to save application data.");
+        }
+    }
+
+    /**
+     * Saves the stock user data.
+     */
+    private void saveStockUserData(User stockUser) throws IOException {
+        String stockUserFilePath = Paths.get("data", "stockUser.dat").toString();
+        File stockUserFile = new File(stockUserFilePath);
+        if (stockUserFile.exists()) {
+            DataManager.saveUser(stockUser, stockUserFilePath);            
+        }
     }
 
     private void loadStockUser() {
@@ -60,7 +103,6 @@ public class Photos extends Application {
             String stockUserFilePath = Paths.get("data", "stockUser.dat").toString();
             File stockUserFile = new File(stockUserFilePath);
             
-
             // Create Stock User and Album
             User stockUser;
             Album stockAlbum;
