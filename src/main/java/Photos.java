@@ -71,8 +71,7 @@ public class Photos extends Application {
                 if(!currentUser.getUsername().equals("stock")) {
                     
                         String filePath = System.getProperty("user.home") + File.separator + "PhotoAlbumUsers" + File.separator + currentUser.getUsername() + ".dat";
-                        DataManager.saveUser(currentUser, filePath);
-                        System.out.println("Saved data for user: " + currentUser.getUsername());                    
+                        DataManager.saveUser(currentUser, filePath);              
                 } else {
                     saveStockUserData(currentUser);
                 }
