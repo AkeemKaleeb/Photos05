@@ -12,8 +12,8 @@ import java.util.Map;
 /**
  * Handles serialization and deserialization of user data.
  * 
- * @owner Kaileb Cole
- * @owner Maxime Deperrois
+ * @author Kaileb Cole
+ * @author Maxime Deperrois
  */
 public class DataManager {
 

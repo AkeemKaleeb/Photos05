@@ -18,8 +18,8 @@ import java.util.Map;
  * Controls the login view of the photo album application.
  * The login view allows users to log in to the application and redirects to admin or user interface.
  * 
- * @owner Kaileb Cole
- * @owner Maxime Deperrois
+ * @author Kaileb Cole
+ * @author Maxime Deperrois
  */
 public class LoginController {
     @FXML
@@ -66,9 +66,8 @@ public class LoginController {
     }
 
     /**
-     * Returns the currently logged-in user.
-     *
-     * @return the logged-in user
+     * Sets the currently logged-in user.
+     * @param currUser the user to set as the current user
      */
     public void setCurrentUser(User currUser) {
         this.currUser = currUser;

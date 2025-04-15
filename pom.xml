@@ -25,6 +25,21 @@
         </dependency>
     </dependencies>
 
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.11.2</version>
+                <configuration>
+                    <outputDirectory>${project.basedir}/docs</outputDirectory>
+                    <failOnError>false</failOnError>
+                    <additionalJOptions>-Xdoclint:none</additionalJOptions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
+
     <build>
         <plugins>
             <plugin>
@@ -40,6 +55,7 @@
                 </executions>
                 <configuration>
                     <mainClass>Photos</mainClass>
+                    <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
         </plugins>

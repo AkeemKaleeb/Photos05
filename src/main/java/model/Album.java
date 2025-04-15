@@ -8,8 +8,8 @@ import java.util.List;
  * Represents an album in the photo album application.
  * Each album has a name, a list of photos, and methods to manage those photos.
  * 
- * @owner Kaileb Cole
- * @owner Maxime Deperrois
+ * @author Kaileb Cole
+ * @author Maxime Deperrois
  */
 public class Album implements Serializable {
     private static final long serialVersionUID = 1L;

@@ -7,8 +7,8 @@ import javafx.stage.Stage;
 /**
  * Controls the username prompt dialog.
  * 
- * @owner Kaileb Cole
- * @owner Maxime Deperrois
+ * @author Kaileb Cole
+ * @author Maxime Deperrois
  */
 public class UsernamePromptController {
 

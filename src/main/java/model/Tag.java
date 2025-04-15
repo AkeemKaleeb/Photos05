@@ -6,8 +6,8 @@ import java.io.Serializable;
  * Represents a tag in the photo album application.
  * Each tag has a name and a value.
  * 
- * @owner Kaileb Cole
- * @owner Maxime Deperrois
+ * @author Kaileb Cole
+ * @author Maxime Deperrois
  */
 public class Tag implements Serializable {
     private String name;

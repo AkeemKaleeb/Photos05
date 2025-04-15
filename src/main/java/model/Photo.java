@@ -15,8 +15,8 @@ import java.time.ZoneId;
  * Represents a photo in the photo album application.
  * Each photo has a caption, a date, and a list of tags.
  * 
- * @owner Kaileb Cole
- * @owner Maxime Deperrois
+ * @author Kaileb Cole
+ * @author Maxime Deperrois
  */
 public class Photo implements Serializable{
     private static final long serialVersionUID = 1L;

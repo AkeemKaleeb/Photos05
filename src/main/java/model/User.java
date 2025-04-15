@@ -8,8 +8,8 @@ import java.util.List;
  * Represents a user in the photo album application.
  * Each user has a username, a list of albums, and methods to manage those albums.
  * 
- * @owner Kaileb Cole
- * @owner Maxime Deperrois
+ * @author Kaileb Cole
+ * @author Maxime Deperrois
  */
 /**
  * Represents a user with a username and a list of albums.

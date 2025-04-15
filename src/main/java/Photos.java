@@ -17,8 +17,8 @@ import model.User;
  * Represents the main application class for the photo album application.
  * This class initializes the JavaFX application and launches the primary stage
  * 
- * @owner Kaileb Cole
- * @owner Maxime Deperrois
+ * @author Kaileb Cole
+ * @author Maxime Deperrois
  */
 public class Photos extends Application {
     private static final String STOCK_USER = "stock";
@@ -29,6 +29,7 @@ public class Photos extends Application {
      * Starts the JavaFX application and launches the primary stage
      * 
      * @param primaryStage the primary stage for the application
+     * @throws Exception if an error occurs during initialization
      */
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -62,6 +63,7 @@ public class Photos extends Application {
 
     /**
      * Saves all user data, including the stock user and any logged-in users.
+     * @param currentUser the currently logged-in user
      */
     private void saveAllData(User currentUser) {
         try {
@@ -86,6 +88,8 @@ public class Photos extends Application {
 
     /**
      * Saves the stock user data.
+     * @param stockUser the stock user to save
+     * @throws IOException if an error occurs during saving
      */
     private void saveStockUserData(User stockUser) throws IOException {
         String stockUserFilePath = Paths.get("data", "stockUser.dat").toString();
@@ -95,6 +99,10 @@ public class Photos extends Application {
         }
     }
 
+    /**
+     * Loads the stock user and initializes the stock album with stock images.
+     * If the stock user file does not exist, it creates a new one.
+     */
     private void loadStockUser() {
         try {
             // Check if the stock user file exists

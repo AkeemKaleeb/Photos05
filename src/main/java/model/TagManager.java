@@ -6,8 +6,8 @@ import java.util.List;
 /**
  * Manages the list of tag types in the photo album application.
  * 
- * @owner Kaileb Cole
- * @owner Maxime Deperrois
+ * @author Kaileb Cole
+ * @author Maxime Deperrois
  */
 public class TagManager {
     // Shared list of tag types

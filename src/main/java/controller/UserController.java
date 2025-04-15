@@ -28,8 +28,8 @@ import java.util.Optional;
  * Controls the user view of the photo album application.
  * The user view allows users to manage albums and photos.
  * 
- * @owner Kaileb Cole
- * @owner Maxime Deperrois
+ * @author Kaileb Cole
+ * @author Maxime Deperrois
  */
 public class UserController {
 
@@ -336,6 +336,11 @@ public class UserController {
         return null;
     }
 
+    /**
+     * Handles the album list view double-click event to open the selected album.
+     *
+     * @param event the mouse event
+     */
     @FXML
     private void handleAlbumDoubleClick(MouseEvent event) {
         // Check if the user double-clicked

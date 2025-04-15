@@ -33,8 +33,8 @@ import java.util.Optional;
  * Controls the album view of the photo album application.
  * The album view allows users to manage photos within an album.
  * 
- * @owner Kaileb Cole
- * @owner Maxime Deperrois
+ * @author Kaileb Cole
+ * @author Maxime Deperrois
  */
 public class AlbumController {
 
@@ -181,15 +181,15 @@ public class AlbumController {
     /**
       * Handles showing the date of the photo
       */
-     @FXML
-     private void handleShowDate() {
-         Photo selectedPhoto = photoListView.getSelectionModel().getSelectedItem();
-         if (selectedPhoto == null) {
-             showAlert("Error", "Please select a photo to view the date.");
-             return;
-         }
-         showAlert("Photo Date", "Date: " + selectedPhoto.getLastModifiedDate());
-     }
+    @FXML
+    private void handleShowDate() {
+        Photo selectedPhoto = photoListView.getSelectionModel().getSelectedItem();
+        if (selectedPhoto == null) {
+            showAlert("Error", "Please select a photo to view the date.");
+            return;
+        }
+        showAlert("Photo Date", "Date: " + selectedPhoto.getLastModifiedDate());
+    }
     
     /**
      * Handles the "Tag Photo" button action.
@@ -232,6 +232,10 @@ public class AlbumController {
         }
     }
 
+    /**
+     * Adds a tag to the selected photo.
+     * @param photo the photo to which the tag will be added
+     */
     private void addTagToPhoto(Photo photo) {
         // Prompt the user to choose between using an existing tag type or adding a new one
         List<String> tagTypeOptions = List.of("Use Existing Tag Type", "Add New Tag Type");
@@ -308,6 +312,9 @@ public class AlbumController {
         showAlert("Success", "Tag added successfully.");
     }
 
+    /**
+     * Deletes a tag from the selected photo.
+     */
     private void deleteTagFromPhoto(Photo photo) {
         // Check if the photo has any tags
         if (photo.getTags().isEmpty()) {
@@ -435,6 +442,10 @@ public class AlbumController {
         }
     }
 
+    /**
+     * Handles the "Open Photo" button action.
+     * Opens the selected photo in a new window.
+     */
     @FXML
     private void handleOpenPhoto() {
         Photo selectedPhoto = photoListView.getSelectionModel().getSelectedItem();
@@ -812,6 +823,12 @@ public class AlbumController {
         return null;
     }
 
+    /**
+     * Handles the double-click event on a photo in the ListView.
+     * Opens the photo in a new window.
+     *
+     * @param event the mouse event
+     */
     @FXML
     private void handlePhotoDoubleClick(MouseEvent event) {
         // Check if the user double-clicked

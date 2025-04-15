@@ -27,8 +27,8 @@ import java.util.Optional;
  * Controls the photo view of the photo album application.
  * The photo view allows users to view and manage photos.
  * 
- * @owner Kaileb Cole
- * @owner Maxime Deperrois
+ * @author Kaileb Cole
+ * @author Maxime Deperrois
  */
 public class PhotoController {
 
@@ -70,6 +70,9 @@ public class PhotoController {
         this.stage = stage;
     }
 
+    /**
+     * Initializes the controller after its root element has been processed.
+     */
     @FXML
     private void initialize() {
         // Add a key event listener for the Enter key
@@ -122,19 +125,46 @@ public class PhotoController {
         nextButton.setDisable(currentIndex == photos.size() - 1);
     }
 
+    /**
+     * Handles the "Move Photo" button action.
+     */
     @FXML
     private void handleMovePhoto() {
         Photo currentPhoto = photos.get(currentIndex);
 
-        TextInputDialog dialog = new TextInputDialog();
+        // Get the list of albums from the user
+        List<Album> userAlbums = album.getUser().getAlbums();
+
+        // Exclude the current album from the list
+        List<Album> availableAlbums = new ArrayList<>();
+        for (Album userAlbum : userAlbums) {
+            if (!userAlbum.equals(album)) {
+                availableAlbums.add(userAlbum);
+            }
+        }
+
+        // Check if there are any other albums to move the photo to
+        if (availableAlbums.isEmpty()) {
+            showAlert("Error", "No other albums available to move the photo.");
+            return;
+        }
+
+        // Create a list of album names for the ChoiceDialog
+        List<String> albumNames = new ArrayList<>();
+        for (Album availableAlbum : availableAlbums) {
+            albumNames.add(availableAlbum.getName());
+        }
+
+        // Show a ChoiceDialog to select the destination album
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(albumNames.get(0), albumNames);
         dialog.setTitle("Move Photo");
-        dialog.setHeaderText("Enter the name of the destination album:");
-        dialog.setContentText("Album Name:");
+        dialog.setHeaderText("Select the destination album:");
+        dialog.setContentText("Album:");
 
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent()) {
             String destinationAlbumName = result.get().trim();
-            Album destinationAlbum = album.getUser().getAlbums().stream()
+            Album destinationAlbum = availableAlbums.stream()
                     .filter(a -> a.getName().equals(destinationAlbumName))
                     .findFirst()
                     .orElse(null);
@@ -149,9 +179,12 @@ public class PhotoController {
                 return;
             }
 
+            // Move the photo to the selected album
             destinationAlbum.addPhoto(currentPhoto);
             album.removePhoto(currentPhoto);
             photos.remove(currentPhoto);
+
+            // Update the current index and photo view
             if (currentIndex >= photos.size()) {
                 currentIndex = photos.size() - 1;
             }
@@ -160,6 +193,9 @@ public class PhotoController {
         }
     }
 
+    /**
+     * Handles the "Tags" button action.
+     */
     @FXML
     private void handleTagPhoto() {
         Photo currentPhoto = photos.get(currentIndex);
@@ -194,6 +230,10 @@ public class PhotoController {
         }
     }
 
+    /**
+     * Adds a tag to the current photo.
+     * @param photo the photo to which the tag will be added
+     */
     private void addTagToPhoto(Photo photo) {
         // Prompt the user to choose between using an existing tag type or adding a new one
         List<String> tagTypeOptions = List.of("Use Existing Tag Type", "Add New Tag Type");
@@ -270,6 +310,10 @@ public class PhotoController {
         showAlert("Success", "Tag added successfully.");
     }
 
+    /**
+     * Deletes a tag from the current photo.
+     * @param photo the photo from which to delete the tag
+     */
     private void deleteTagFromPhoto(Photo photo) {
         // Check if the photo has any tags
         if (photo.getTags().isEmpty()) {
@@ -313,6 +357,9 @@ public class PhotoController {
         }
     }
 
+    /**
+     * Handles the "Update Caption" button action.
+     */
     private void updateCaption() {
         Photo currentPhoto = photos.get(currentIndex);
         String newCaption = captionField.getText().trim();
@@ -350,6 +397,7 @@ public class PhotoController {
      * Displays an alert with the given message.
      *
      * @param message the message to display in the alert
+     * @param title   the title of the alert
      */
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -359,6 +407,9 @@ public class PhotoController {
         alert.showAndWait();
     }
 
+    /**
+     * Handles the "Back" button action.
+     */
     @FXML
     private void handleBackToAlbum() {
         try {
