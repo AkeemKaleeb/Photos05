@@ -2,18 +2,16 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 
+import controller.LoginController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.chart.PieChart.Data;
 import javafx.stage.Stage;
 import model.Album;
 import model.DataManager;
 import model.Photo;
 import model.User;
-import view.LoginController;
-import view.UserController;
 
 /**
  * Represents the main application class for the photo album application.

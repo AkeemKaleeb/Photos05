@@ -1,4 +1,4 @@
-package view;
+package controller;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -16,6 +16,7 @@ import javafx.stage.Stage;
 import model.Album;
 import model.Photo;
 import model.Tag;
+import model.TagManager;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -67,6 +68,12 @@ public class PhotoController {
      */
     public void setStage(Stage stage) {
         this.stage = stage;
+    }
+
+    @FXML
+    private void initialize() {
+        // Add a key event listener for the Enter key
+        captionField.setOnAction(event -> updateCaption());
     }
 
     /**
@@ -157,16 +164,26 @@ public class PhotoController {
     private void handleTagPhoto() {
         Photo currentPhoto = photos.get(currentIndex);
 
+        // Display current tags
+        StringBuilder currentTags = new StringBuilder("Current Tags:\n");
+        if (currentPhoto.getTags().isEmpty()) {
+            currentTags.append("No tags assigned.");
+        } else {
+            for (Tag tag : currentPhoto.getTags()) {
+                currentTags.append("- ").append(tag.getName()).append(": ").append(tag.getValue()).append("\n");
+            }
+        }
+
         // Prompt the user to choose between adding or deleting a tag
         List<String> options = List.of("Add Tag", "Delete Tag");
         ChoiceDialog<String> dialog = new ChoiceDialog<>("Add Tag", options);
         dialog.setTitle("Tag Photo");
-        dialog.setHeaderText("Choose an action:");
+        dialog.setHeaderText(currentTags.toString());
         dialog.setContentText("What would you like to do?");
 
         Optional<String> result = dialog.showAndWait();
         if (result.isEmpty()) {
-            return; // User canceled
+            return; 
         }
 
         String choice = result.get();
@@ -178,25 +195,71 @@ public class PhotoController {
     }
 
     private void addTagToPhoto(Photo photo) {
-        // Prompt the user to enter a tag in the format "name:value"
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Add Tag");
-        dialog.setHeaderText("Enter a tag in the format 'name:value':");
-        dialog.setContentText("Tag:");
+        // Prompt the user to choose between using an existing tag type or adding a new one
+        List<String> tagTypeOptions = List.of("Use Existing Tag Type", "Add New Tag Type");
+        ChoiceDialog<String> tagTypeChoiceDialog = new ChoiceDialog<>("Use Existing Tag Type", tagTypeOptions);
+        tagTypeChoiceDialog.setTitle("Tag Type Selection");
+        tagTypeChoiceDialog.setHeaderText("Choose how to proceed:");
+        tagTypeChoiceDialog.setContentText("What would you like to do?");
     
-        Optional<String> result = dialog.showAndWait();
-        if (result.isEmpty() || result.get().trim().isEmpty()) {
-            showAlert("Error", "Tag cannot be empty.");
+        Optional<String> tagTypeChoiceResult = tagTypeChoiceDialog.showAndWait();
+        if (tagTypeChoiceResult.isEmpty()) {
+            showAlert("Error", "Tag type selection canceled.");
             return;
         }
     
-        String[] tagParts = result.get().trim().split(":");
-        if (tagParts.length != 2) {
-            showAlert("Error", "Tag must be in the format 'name:value'.");
+        String tagTypeChoice = tagTypeChoiceResult.get();
+        String tagType;
+    
+        if (tagTypeChoice.equals("Add New Tag Type")) {
+            // Prompt the user to define a new tag type
+            TextInputDialog newTagTypeDialog = new TextInputDialog();
+            newTagTypeDialog.setTitle("New Tag Type");
+            newTagTypeDialog.setHeaderText("Enter a new tag type:");
+            newTagTypeDialog.setContentText("Tag Type:");
+    
+            Optional<String> newTagTypeResult = newTagTypeDialog.showAndWait();
+            if (newTagTypeResult.isEmpty() || newTagTypeResult.get().trim().isEmpty()) {
+                showAlert("Error", "New tag type cannot be empty.");
+                return;
+            }
+    
+            tagType = newTagTypeResult.get().trim();
+    
+            // Add the new tag type to the shared list
+            TagManager.addTagType(tagType);
+        } else {
+            // Use an existing tag type
+            List<String> tagTypes = TagManager.getTagTypes();
+            ChoiceDialog<String> existingTagTypeDialog = new ChoiceDialog<>("location", tagTypes);
+            existingTagTypeDialog.setTitle("Select Tag Type");
+            existingTagTypeDialog.setHeaderText("Select an existing tag type:");
+            existingTagTypeDialog.setContentText("Tag Type:");
+    
+            Optional<String> existingTagTypeResult = existingTagTypeDialog.showAndWait();
+            if (existingTagTypeResult.isEmpty()) {
+                showAlert("Error", "Tag type selection canceled.");
+                return;
+            }
+    
+            tagType = existingTagTypeResult.get();
+        }
+    
+        // Prompt the user to enter the tag value
+        TextInputDialog tagValueDialog = new TextInputDialog();
+        tagValueDialog.setTitle("Add Tag");
+        tagValueDialog.setHeaderText("Enter a value for the tag:");
+        tagValueDialog.setContentText("Tag Value:");
+    
+        Optional<String> tagValueResult = tagValueDialog.showAndWait();
+        if (tagValueResult.isEmpty() || tagValueResult.get().trim().isEmpty()) {
+            showAlert("Error", "Tag value cannot be empty.");
             return;
         }
     
-        Tag newTag = new Tag(tagParts[0].trim(), tagParts[1].trim());
+        String tagValue = tagValueResult.get().trim();
+        Tag newTag = new Tag(tagType, tagValue);
+    
         if (photo.getTags().contains(newTag)) {
             showAlert("Error", "This tag already exists.");
             return;
@@ -206,7 +269,7 @@ public class PhotoController {
         tagsListView.getItems().add(newTag.getName() + ": " + newTag.getValue());
         showAlert("Success", "Tag added successfully.");
     }
-    
+
     private void deleteTagFromPhoto(Photo photo) {
         // Check if the photo has any tags
         if (photo.getTags().isEmpty()) {
@@ -227,7 +290,7 @@ public class PhotoController {
 
         Optional<String> result = dialog.showAndWait();
         if (result.isEmpty()) {
-            return; // User canceled
+            return;
         }
 
         String selectedTag = result.get();
@@ -250,8 +313,7 @@ public class PhotoController {
         }
     }
 
-    @FXML
-    private void handleUpdateCaption() {
+    private void updateCaption() {
         Photo currentPhoto = photos.get(currentIndex);
         String newCaption = captionField.getText().trim();
         if (newCaption.isEmpty()) {

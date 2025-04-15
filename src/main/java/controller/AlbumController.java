@@ -1,4 +1,4 @@
-package view;
+package controller;
 
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -19,6 +19,7 @@ import model.Album;
 import model.Photo;
 import model.User;
 import model.Tag;
+import model.TagManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -201,11 +202,21 @@ public class AlbumController {
             return;
         }
 
+        // Display current tags
+        StringBuilder currentTags = new StringBuilder("Current Tags:\n");
+        if (selectedPhoto.getTags().isEmpty()) {
+            currentTags.append("No tags assigned.");
+        } else {
+            for (Tag tag : selectedPhoto.getTags()) {
+                currentTags.append("- ").append(tag.getName()).append(": ").append(tag.getValue()).append("\n");
+            }
+        }
+
         // Prompt the user to choose between adding or deleting a tag
         List<String> options = List.of("Add Tag", "Delete Tag");
         ChoiceDialog<String> dialog = new ChoiceDialog<>("Add Tag", options);
         dialog.setTitle("Tag Photo");
-        dialog.setHeaderText("Choose an action:");
+        dialog.setHeaderText(currentTags.toString());
         dialog.setContentText("What would you like to do?");
 
         Optional<String> result = dialog.showAndWait();
@@ -222,31 +233,78 @@ public class AlbumController {
     }
 
     private void addTagToPhoto(Photo photo) {
-        // Prompt the user to enter a tag in the format "name:value"
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Add Tag");
-        dialog.setHeaderText("Enter a tag in the format 'name:value':");
-        dialog.setContentText("Tag:");
-
-        Optional<String> result = dialog.showAndWait();
-        if (result.isEmpty() || result.get().trim().isEmpty()) {
-            showAlert("Error", "Tag cannot be empty.");
+        // Prompt the user to choose between using an existing tag type or adding a new one
+        List<String> tagTypeOptions = List.of("Use Existing Tag Type", "Add New Tag Type");
+        ChoiceDialog<String> tagTypeChoiceDialog = new ChoiceDialog<>("Use Existing Tag Type", tagTypeOptions);
+        tagTypeChoiceDialog.setTitle("Tag Type Selection");
+        tagTypeChoiceDialog.setHeaderText("Choose how to proceed:");
+        tagTypeChoiceDialog.setContentText("What would you like to do?");
+    
+        Optional<String> tagTypeChoiceResult = tagTypeChoiceDialog.showAndWait();
+        if (tagTypeChoiceResult.isEmpty()) {
+            showAlert("Error", "Tag type selection canceled.");
             return;
         }
-
-        String[] tagParts = result.get().trim().split(":");
-        if (tagParts.length != 2) {
-            showAlert("Error", "Tag must be in the format 'name:value'.");
+    
+        String tagTypeChoice = tagTypeChoiceResult.get();
+        String tagType;
+    
+        if (tagTypeChoice.equals("Add New Tag Type")) {
+            // Prompt the user to define a new tag type
+            TextInputDialog newTagTypeDialog = new TextInputDialog();
+            newTagTypeDialog.setTitle("New Tag Type");
+            newTagTypeDialog.setHeaderText("Enter a new tag type:");
+            newTagTypeDialog.setContentText("Tag Type:");
+    
+            Optional<String> newTagTypeResult = newTagTypeDialog.showAndWait();
+            if (newTagTypeResult.isEmpty() || newTagTypeResult.get().trim().isEmpty()) {
+                showAlert("Error", "New tag type cannot be empty.");
+                return;
+            }
+    
+            tagType = newTagTypeResult.get().trim();
+    
+            // Add the new tag type to the shared list
+            TagManager.addTagType(tagType);
+        } else {
+            // Use an existing tag type
+            List<String> tagTypes = TagManager.getTagTypes();
+            ChoiceDialog<String> existingTagTypeDialog = new ChoiceDialog<>("location", tagTypes);
+            existingTagTypeDialog.setTitle("Select Tag Type");
+            existingTagTypeDialog.setHeaderText("Select an existing tag type:");
+            existingTagTypeDialog.setContentText("Tag Type:");
+    
+            Optional<String> existingTagTypeResult = existingTagTypeDialog.showAndWait();
+            if (existingTagTypeResult.isEmpty()) {
+                showAlert("Error", "Tag type selection canceled.");
+                return;
+            }
+    
+            tagType = existingTagTypeResult.get();
+        }
+    
+        // Prompt the user to enter the tag value
+        TextInputDialog tagValueDialog = new TextInputDialog();
+        tagValueDialog.setTitle("Add Tag");
+        tagValueDialog.setHeaderText("Enter a value for the tag:");
+        tagValueDialog.setContentText("Tag Value:");
+    
+        Optional<String> tagValueResult = tagValueDialog.showAndWait();
+        if (tagValueResult.isEmpty() || tagValueResult.get().trim().isEmpty()) {
+            showAlert("Error", "Tag value cannot be empty.");
             return;
         }
-
-        Tag newTag = new Tag(tagParts[0].trim(), tagParts[1].trim());
+    
+        String tagValue = tagValueResult.get().trim();
+        Tag newTag = new Tag(tagType, tagValue);
+    
         if (photo.getTags().contains(newTag)) {
             showAlert("Error", "This tag already exists.");
             return;
         }
-
+    
         photo.addTag(newTag);
+        photoListView.refresh();
         showAlert("Success", "Tag added successfully.");
     }
 
@@ -270,7 +328,7 @@ public class AlbumController {
 
         Optional<String> result = dialog.showAndWait();
         if (result.isEmpty()) {
-            return; // User canceled
+            return; 
         }
 
         String selectedTag = result.get();
@@ -286,6 +344,7 @@ public class AlbumController {
 
         if (tagToDelete != null) {
             photo.removeTag(tagToDelete);
+            photoListView.refresh();
             showAlert("Success", "Tag deleted successfully.");
         } else {
             showAlert("Error", "Failed to delete the selected tag.");
@@ -487,37 +546,34 @@ public class AlbumController {
      * Handles the "Single Tag" option for HandleSearchPhotos.
      */
     private void searchBySingleTag() {
-        // Predefined tag types
-        List<String> predefinedTagTypes = Arrays.asList("location", "person", "activity");
-
-        // Prompt user to select a tag type
-        ChoiceDialog<String> tagTypeDialog = new ChoiceDialog<>("location", predefinedTagTypes);
+        // Use the dynamic tag types list
+        ChoiceDialog<String> tagTypeDialog = new ChoiceDialog<>("location", TagManager.getTagTypes());
         tagTypeDialog.setTitle("Search by Single Tag");
         tagTypeDialog.setHeaderText("Select Tag Type:");
         tagTypeDialog.setContentText("Tag Type:");
+    
         Optional<String> tagTypeResult = tagTypeDialog.showAndWait();
-
         if (!tagTypeResult.isPresent()) {
             showAlert("Error", "Tag type selection canceled.");
             return;
         }
-
+    
         String tagType = tagTypeResult.get();
-
+    
         // Prompt user for tag value
         TextInputDialog tagValueDialog = new TextInputDialog();
         tagValueDialog.setTitle("Search by Single Tag");
         tagValueDialog.setHeaderText("Enter Tag Value:");
         tagValueDialog.setContentText("Tag Value:");
+    
         Optional<String> tagValueResult = tagValueDialog.showAndWait();
-
         if (!tagValueResult.isPresent() || tagValueResult.get().trim().isEmpty()) {
             showAlert("Error", "Tag value cannot be empty.");
             return;
         }
-
+    
         String tagValue = tagValueResult.get().trim();
-
+    
         // Filter photos by single tag
         List<Photo> matchingPhotos = new ArrayList<>();
         for (Photo photo : album.getPhotos()) {
@@ -528,7 +584,7 @@ public class AlbumController {
                 }
             }
         }
-
+    
         displaySearchResults(matchingPhotos, "No photos found with the specified tag.");
     }
 

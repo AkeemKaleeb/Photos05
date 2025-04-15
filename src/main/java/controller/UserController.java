@@ -1,4 +1,4 @@
-package view;
+package controller;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -13,11 +13,13 @@ import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import model.Album;
 import model.DataManager;
+import model.Photo;
 import model.User;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -66,8 +68,37 @@ public class UserController {
     private void loadUserAlbums() {
         albums.clear();
         albumListView.getItems().clear();
+
         for (Album album : user.getAlbums()) {
-            String displayName = String.format("%s (%d photos)", album.getName(), album.getPhotos().size());
+            String displayName;
+
+            if (album.getPhotos().isEmpty()) {
+                // If the album has no photos, display "No photos"
+                displayName = String.format("%s (0 photos) - No photos", album.getName());
+            } else {
+                // Calculate the earliest and latest dates
+                LocalDateTime earliestDate = album.getPhotos().stream()
+                    .map(Photo::getLastModifiedDate)
+                    .min(LocalDateTime::compareTo)
+                    .orElse(null);
+
+                LocalDateTime latestDate = album.getPhotos().stream()
+                    .map(Photo::getLastModifiedDate)
+                    .max(LocalDateTime::compareTo)
+                    .orElse(null);
+
+                // Format the date range
+                String dateRange = String.format("%s to %s",
+                    earliestDate.toLocalDate().toString(),
+                    latestDate.toLocalDate().toString());
+
+                // Display the album name, photo count, and date range
+                displayName = String.format("%s (%d photos) - %s",
+                    album.getName(),
+                    album.getPhotos().size(),
+                    dateRange);
+            }
+
             albums.add(album.getName());
             albumListView.getItems().add(displayName);
         }
